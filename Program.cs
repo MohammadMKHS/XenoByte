@@ -1,7 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using XenoByte.AppManager;
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"] ?? "";
+builder.Services.AddDbContext<ApplicationContext>(options =>
+        options.UseSqlServer(connectionString));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
