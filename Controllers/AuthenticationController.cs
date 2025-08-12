@@ -29,7 +29,7 @@ namespace XenoByte.Controllers
             /*
             1- get the user from the applicationContext by email
             2- check if the user exist in the DB
-            3- use PasswordHelper.VerifyPassword() to verify if the passowrd is correct
+            3- use PasswordHelper.VerifyPassword(password,storedHash,storedSalt) to verify if the passowrd is correct
             4- retunrn validation errors
             5- go to home index if there is no errors
              
