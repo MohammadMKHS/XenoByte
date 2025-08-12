@@ -10,8 +10,6 @@ var connectionString = builder.Configuration["ConnectionStrings:DefaultConnectio
 builder.Services.AddDbContext<ApplicationContext>(options =>
         options.UseSqlServer(connectionString));
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
 
 var key = builder.Configuration["Jwt:Key"]; // Make sure this exists in appsettings.json
 

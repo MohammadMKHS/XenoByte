@@ -16,9 +16,17 @@ namespace XenoByte.AppManager
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Role>()
+                .Property(r => r.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
             modelBuilder.Entity<Role>().HasData(
-                new Role { Id = 1, Name = "Admin", CreatedAt = DateTime.UtcNow },
-                new Role { Id = 2, Name = "User", CreatedAt = DateTime.UtcNow }
+                new Role { Id = 1, Name = "Admin",CreatedAt = new DateTime(2025, 8, 12) },
+                new Role { Id = 2, Name = "User", CreatedAt = new DateTime(2025, 8, 12) }
             );
 
             modelBuilder.Entity<User>().HasData(
@@ -27,8 +35,9 @@ namespace XenoByte.AppManager
                     Id = 1,
                     Username = "admin",
                     Email = "admin@example.com",
-                    PasswordHash = "hashed_password", // You should hash this
-                    CreatedAt = DateTime.UtcNow
+                    PasswordHash = "klb5gPgOix1Sp9uHVMX+yK3s6Nvylm0qlTZfIk/bcrs=",
+                    PasswordSalt = "wJrDwiOhol/FFA72QgOSbg==",
+                    CreatedAt = new DateTime(2025, 8, 12)
                 }
             );
 
