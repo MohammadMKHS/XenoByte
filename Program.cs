@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using XenoByte.AppManager;
 
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration["ConnectionStrings:DefaultConnection"] ?? "";
@@ -25,6 +26,8 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true
     };
 });
+
+
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddAuthorization();
@@ -50,7 +53,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Authentication}/{action=Login}")
     .WithStaticAssets();
 
 
