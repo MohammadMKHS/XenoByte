@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using XenoByte.AppManager;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 
 
@@ -12,21 +13,14 @@ builder.Services.AddDbContext<ApplicationContext>(options =>
         options.UseSqlServer(connectionString));
 
 
-var key = builder.Configuration["Jwt:Key"]; // Make sure this exists in appsettings.json
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
     {
-        ValidateLifetime = true
-    };
-});
-
+        options.LoginPath = "/Authentication/Login";        // redirect if not logged in
+        options.AccessDeniedPath = "/Authentication/Login"; // redirect if unauthorized
+        options.ExpireTimeSpan = TimeSpan.FromHours(2);     // cookie expiration
+        options.SlidingExpiration = true;
+    });
 
 
 builder.Services.AddControllersWithViews();
@@ -53,7 +47,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Authentication}/{action=Login}")
+    pattern: "{controller=Home}/{action=Index}")
     .WithStaticAssets();
 
 

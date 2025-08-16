@@ -1,0 +1,650 @@
+﻿/* Custom CSS variables and base styles from user's provided CSS */
+:root {
+    --bg-color: #0a0a0a;
+    --box-color: #121212;
+    --text-color: #00f5d4;
+    --accent: #00ff88;
+    --input-bg: #1e1e1e;
+    --input-border: #00f5d4;
+    --footer-bg: #111;
+    --footer-text: #ccc;
+    --card-bg: #1a1a1a; /* New: for dashboard cards */
+    --card-border: #00f5d4; /* New: for card borders */
+    --scroll-thumb: #00f5d4; /* New: scrollbar thumb color */
+    --scroll-track: #1e1e1e; /* New: scrollbar track color */
+    --toggle-bg-dark: #2d3748;
+    --toggle-circle-dark: #a0aec0;
+    --toggle-bg-light: #cbd5e0;
+    --toggle-circle-light: #2d3748;
+}
+
+body.light-theme {
+    --bg-color: #f4f4f4;
+    --box-color: #ffffff;
+    --text-color: #0a0a0a;
+    --accent: #00c47a;
+    --input-bg: #e9e9e9;
+    --input-border: #00c47a;
+    --footer-bg: #e0e0e0;
+    --footer-text: #333;
+    --card-bg: #f0f0f0; /* New: for dashboard cards */
+    --card-border: #00c47a; /* New: for card borders */
+    --scroll-thumb: #00c47a; /* New: scrollbar thumb color */
+    --scroll-track: #e9e9e9; /* New: scrollbar track color */
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    font-family: 'Orbitron', sans-serif;
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.4s, color 0.4s;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* General content wrapper for main sections */
+.content-wrapper {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    width: 100%; /* Take full width */
+    box-sizing: border-box; /* Include padding in width */
+}
+
+/* Login box styles (kept for consistency, though not directly used on index) */
+.login-box {
+    background: var(--box-color);
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px var(--text-color);
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+    .login-box h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: var(--text-color);
+    }
+
+.form-control {
+    background-color: var(--input-bg);
+    border: none;
+    color: var(--text-color);
+    border-bottom: 2px solid var(--input-border);
+    border-radius: 0;
+    transition: 0.3s;
+}
+
+    .form-control:focus {
+        background-color: #000;
+        box-shadow: none;
+        border-bottom: 2px solid var(--accent);
+        color: var(--accent);
+        outline: none;
+    }
+
+.btn-login {
+    background: linear-gradient(90deg, var(--text-color), var(--accent));
+    border: none;
+    width: 100%;
+    font-weight: bold;
+    color: #000;
+    transition: 0.4s;
+}
+
+    .btn-login:hover {
+        background: var(--accent);
+        transform: scale(1.05);
+    }
+
+/* Typewriter effect for tagline */
+#typewriter {
+    text-align: center;
+    font-size: 1.2rem; /* Adjusted for better visibility */
+    margin-top: 10px;
+    color: var(--text-color); /* Changed to use text-color variable */
+    min-height: 30px; /* Prevent layout shift */
+}
+
+/* Footer styles */
+footer.xeno-footer {
+    flex-shrink: 0;
+    background: var(--footer-bg);
+    color: var(--footer-text);
+    text-align: center;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.95rem;
+    border-top: 2px solid #3a3a3a;
+    padding: 20px 10px;
+    width: 100%;
+    transition: background 0.4s, color 0.4s;
+}
+
+    footer.xeno-footer a {
+        color: #88c0d0;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+        footer.xeno-footer a:hover {
+            color: var(--accent); /* Use accent color on hover */
+        }
+
+/* Glow animation for boxes/cards */
+@keyframes glow {
+    from {
+        box-shadow: 0 0 10px var(--text-color);
+    }
+
+    to {
+        box-shadow: 0 0 20px var(--accent);
+    }
+}
+
+/* --- Theme Toggle Switch Styles --- */
+.theme-switch-wrapper {
+    position: fixed;
+    top: 53px; /* Adjusted position */
+    right: 30px; /* Adjusted position */
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.theme-switch {
+    display: inline-block;
+    height: 18px; /* Smaller height */
+    position: relative;
+    width: 36px; /* Smaller width */
+}
+
+    .theme-switch input {
+        display: none;
+    }
+
+.slider {
+    background-color: var(--toggle-bg-dark);
+    bottom: 0;
+    cursor: pointer;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: .4s;
+    border-radius: 18px; /* Adjusted border-radius for new height */
+}
+
+    .slider:before {
+        background-color: var(--toggle-circle-dark);
+        bottom: 1px; /* Adjusted to fit new height */
+        content: "";
+        height: 16px; /* Adjusted to fit new height */
+        left: 1px; /* Adjusted to fit new height */
+        position: absolute;
+        transition: .4s;
+        width: 16px; /* Adjusted to fit new height */
+        border-radius: 50%;
+    }
+
+input:checked + .slider {
+    background-color: var(--toggle-bg-light);
+}
+
+    input:checked + .slider:before {
+        transform: translateX(18px); /* Adjusted for new width: 36px - 16px (circle width) - 2*1px (left/right padding) = 18px */
+        background-color: var(--toggle-circle-light);
+    }
+
+/* --- New styles for XenoByte Dashboard --- */
+.header {
+    background-color: var(--box-color);
+    border-bottom: 2px solid var(--accent);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    gap: 1rem; /* Space between items */
+}
+
+    .header .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Space between logo image and text */
+    }
+
+    .header .logo-img {
+        height: 40px; /* Adjust as needed */
+        width: auto;
+        border-radius: 8px; /* Slightly rounded corners for the logo */
+        box-shadow: 0 0 8px rgba(0, 245, 212, 0.3); /* Subtle glow for the logo */
+    }
+
+    .header .logo-text {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--accent);
+        text-shadow: 0 0 5px var(--text-color);
+    }
+
+    .header nav a {
+        color: var(--text-color);
+        margin-left: 1.5rem;
+        text-decoration: none;
+        font-weight: bold;
+        transition: color 0.3s ease, transform 0.3s ease;
+        position: relative;
+    }
+
+        .header nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .header nav a:hover::after {
+            width: 100%;
+        }
+
+        .header nav a:hover {
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+/* Dashboard grid layout */
+.dashboard-grid {
+    display: grid;
+    /* Three columns for the top row, full width for the bottom rows */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+    width: 100%; /* Take full width */
+    box-sizing: border-box;
+    flex-grow: 1; /* Allow grid to take available space */
+}
+
+/* Dashboard card styling */
+.dashboard-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 0 15px rgba(0, 245, 212, 0.1); /* Subtle glow */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Hide overflowing content for scrolling effects */
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer; /* Indicate interactivity */
+}
+
+    .dashboard-card:hover {
+        box-shadow: 0 0 25px var(--accent);
+        transform: translateY(-5px);
+    }
+
+    .dashboard-card h3 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.3rem;
+        color: var(--accent);
+        margin-bottom: 1rem;
+        border-bottom: 1px solid rgba(0, 245, 212, 0.3);
+        padding-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .dashboard-card .content-area {
+        flex-grow: 1;
+        overflow-y: auto; /* Enable vertical scrolling for content */
+        padding-right: 10px; /* Space for scrollbar */
+        max-height: 200px; /* Fixed height for content area to prevent growth */
+    }
+
+/* Custom scrollbar styles */
+.content-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.content-area::-webkit-scrollbar-track {
+    background: var(--scroll-track);
+    border-radius: 10px;
+}
+
+.content-area::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb);
+    border-radius: 10px;
+}
+
+    .content-area::-webkit-scrollbar-thumb:hover {
+        background: var(--accent);
+    }
+
+/* Specific styles for data lists */
+.data-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed rgba(0, 245, 212, 0.1);
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+    .data-list li:last-child {
+        border-bottom: none;
+    }
+
+.data-list .hash, .data-list .id {
+    color: var(--accent);
+    font-weight: bold;
+    word-break: break-all; /* Break long strings */
+}
+
+.data-list .value {
+    color: #ccc;
+}
+
+.data-list .from-to {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.data-list .apt-group {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.data-list .apt-activity {
+    color: #ccc;
+}
+
+.data-list .cve-id {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.data-list .cve-desc {
+    color: #ccc;
+}
+
+/* Search bar styling */
+.search-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    background-color: var(--box-color);
+    border-radius: 15px;
+    box-shadow: 0 0 20px var(--text-color);
+    margin-bottom: 20px;
+    text-align: center;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+    .search-section .search-input {
+        width: 100%;
+        max-width: 600px;
+        padding: 12px 20px;
+        border: 2px solid var(--input-border);
+        border-radius: 30px;
+        background-color: var(--input-bg);
+        color: var(--text-color);
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+        .search-section .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+    .search-section .search-button {
+        background: linear-gradient(90deg, var(--text-color), var(--accent));
+        color: #000;
+        padding: 12px 30px;
+        border-radius: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+        border: none;
+    }
+
+        .search-section .search-button:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+
+/* --- Modal Styles --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75); /* Dark overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* Ensure it's on top */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+    .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+.modal-content {
+    background-color: var(--box-color);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 0 30px var(--accent);
+    width: 90%;
+    max-width: 800px; /* Max width for modal */
+    max-height: 90vh; /* Max height for scrollable content */
+    overflow-y: auto; /* Enable scrolling for modal content */
+    position: relative;
+    transform: translateY(-50px); /* Start slightly above center */
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-overlay.show .modal-content {
+    transform: translateY(0); /* Slide into place */
+    opacity: 1;
+}
+
+.modal-content h3 {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--accent);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(0, 245, 212, 0.3);
+    padding-bottom: 0.5rem;
+}
+
+.modal-content .modal-body {
+    font-family: 'Segoe UI', sans-serif;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.modal-content .close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+    .modal-content .close-button:hover {
+        color: var(--accent);
+    }
+
+/* Styles for the new "Live Cyber Attack List" card */
+.attack-list-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    flex-grow: 1; /* Allow it to take available space */
+}
+
+.attack-box {
+    flex: 1; /* Allow boxes to grow and shrink */
+    min-width: 280px; /* Minimum width for each box */
+    background-color: var(--box-color);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 15px;
+    overflow-y: auto;
+    max-height: 250px; /* Fixed height for attack list boxes */
+    box-shadow: 0 0 10px rgba(0, 245, 212, 0.1);
+}
+
+    .attack-box h4 { /* Changed from h2 to h4 for hierarchy */
+        margin-top: 0;
+        color: var(--accent);
+        text-align: center;
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 245, 212, 0.2);
+        padding-bottom: 5px;
+    }
+
+    .attack-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .attack-box li {
+        padding: 8px 0;
+        border-bottom: 1px dashed rgba(0, 245, 212, 0.1);
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 0.85rem;
+        color: var(--text-color);
+    }
+
+        .attack-box li:last-child {
+            border-bottom: none;
+        }
+
+/* Styles for the Custom Global Activity Map Canvas */
+#globalActivityMapCanvas {
+    width: 100%;
+    height: 400px; /* Fixed height for the map canvas */
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 245, 212, 0.3);
+    display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) { /* Adjust grid for medium screens */
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Allow 2 or 1 column */
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+        .header nav {
+            margin-top: 1rem;
+        }
+
+            .header nav a {
+                margin: 0 0.5rem;
+                display: inline-block;
+            }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* Single column on small screens */
+        padding: 10px;
+    }
+
+    .dashboard-card {
+        padding: 0.8rem;
+    }
+
+        .dashboard-card h3 {
+            font-size: 1.1rem;
+        }
+
+    .data-list li {
+        font-size: 0.85rem;
+    }
+
+    .search-section {
+        padding: 20px 15px;
+    }
+
+        .search-section .search-input {
+            font-size: 0.9rem;
+        }
+
+    #typewriter {
+        font-size: 1rem;
+    }
+
+    .theme-switch-wrapper {
+        top: 15px; /* Adjust for smaller screens */
+        right: 15px; /* Adjust for smaller screens */
+        font-size: 0.75rem;
+    }
+
+    .modal-content {
+        padding: 1.5rem;
+    }
+
+        .modal-content h3 {
+            font-size: 1.2rem;
+        }
+
+        .modal-content .modal-body {
+            font-size: 0.85rem;
+        }
+
+    .attack-list-container {
+        flex-direction: column; /* Stack columns on small screens */
+    }
+
+    .attack-box {
+        min-width: unset; /* Remove min-width for stacking */
+        width: 100%;
+    }
+
+    #globalActivityMapCanvas {
+        height: 300px; /* Adjust height for smaller screens */
+    }
+}

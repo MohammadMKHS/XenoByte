@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Sign Up";
+    Layout = "_Layout";
+}
+
+<div class="signup-box glow-border">
+    <h2>Create Your XenoByte Account</h2>
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger text-center">@ViewBag.Error</div>
+    }
+    <form asp-action="SignUp">
+        <div class="mb-3">
+            <input type="text" name="username" class="form-control" placeholder="Username" required />
+        </div>
+        <div class="mb-3">
+            <input type="email" name="email" class="form-control" placeholder="Email" required />
+        </div>
+        <div class="mb-3">
+            <input type="password" name="password" class="form-control" placeholder="Password" required />
+        </div>
+        <div class="mb-3">
+            <input type="password" name="confirmPassword" class="form-control" placeholder="Retype Password" required />
+        </div>
+        <button type="submit" class="btn btn-signup">Create Account</button>
+    </form>
+    <p id="typewriter"></p>
+</div>

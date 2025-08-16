@@ -2,7 +2,83 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Search and Typewriter Section -->
+@if (User.Identity.IsAuthenticated)
+{
+    <section class="search-section">
+        <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">Track and maintain your wallet</h1>
+        <div class="w-full flex flex-col items-center">
+
+            <span>DDL</span>
+
+        </div>
+    </section>
+}
+
+<section class="search-section">
+    <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">Uncover Illicit Crypto Activities</h1>
+    <p id="typewriter" class="text-lg md:text-xl mb-6"></p>
+    <div class="w-full flex flex-col items-center">
+        <input type="text" id="addressInput" class="search-input" placeholder="Enter Address / Transaction Hash to Trace...">
+        <button id="traceButton" class="search-button">
+            <i class="fas fa-search"></i> Trace
+        </button>
+    </div>
+</section>
+
+<!-- Dynamic Dashboard Grid -->
+<section class="dashboard-grid">
+    <!-- Live Transaction Stream Card -->
+    <div class="dashboard-card" id="transactionCard">
+
+        <h3><i class="fas fa-exchange-alt"></i> Live Transaction Stream</h3>
+        <div class="content-area">
+            <ul id="transactionList" class="data-list">
+                <!-- Transactions will be dynamically added here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Threat Intelligence: APT Activity Card -->
+    <div class="dashboard-card" id="aptCard">
+        <h3><i class="fas fa-shield-alt"></i> Threat Intelligence: APT Activity</h3>
+        <div class="content-area">
+            <ul id="aptList" class="data-list">
+                <!-- APT data will be dynamically added here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Vulnerability Watch: Latest CVEs Card -->
+    <div class="dashboard-card" id="cveCard">
+        <h3><i class="fas fa-bug"></i> Vulnerability Watch: Latest CVEs</h3>
+        <div class="content-area">
+            <ul id="cveList" class="data-list">
+                <!-- CVE data will be dynamically added here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Live Cyber Attack List Card -->
+    <div class="dashboard-card col-span-full">
+        <h3><i class="fas fa-fire-alt"></i> Live Cyber Attack List</h3>
+        <div class="content-area attack-list-container">
+            <div class="attack-box">
+                <h4>Countries Being Attacked</h4>
+                <ul id="targeted-countries"></ul>
+            </div>
+            <div class="attack-box">
+                <h4>Attacking Countries</h4>
+                <ul id="attacking-countries"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Activity Map Card (Custom Canvas) -->
+    <div class="dashboard-card col-span-full">
+        <h3><i class="fas fa-globe"></i> Global Activity Map</h3>
+        <div class="content-area flex items-center justify-center relative">
+            <canvas id="globalActivityMapCanvas"></canvas>
+        </div>
+    </div>
+</section>

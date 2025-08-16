@@ -1,12 +1,9 @@
-
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using XenoByte.Models;
 
 namespace XenoByte.Controllers
 {
-
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -22,6 +19,12 @@ namespace XenoByte.Controllers
         }
 
         public IActionResult Privacy()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult Contact()
         {
             return View();
         }
