@@ -648,3 +648,89 @@ input:checked + .slider {
         height: 300px; /* Adjust height for smaller screens */
     }
 }
+
+.modal-dialog {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* full screen height */
+}
+
+/* Modal content neon style */
+.modal-content {
+    background: #0b0b0b;
+    border: 1px solid #00ff9c;
+    box-shadow: 0 0 15px rgba(0, 255, 156, 0.6);
+    color: #e0e0e0;
+    border-radius: 10px;
+    opacity:1;
+    margin: auto;
+}
+
+/* Header */
+.modal-header {
+    border-bottom: 1px solid #00ff9c;
+    background: rgba(0, 255, 156, 0.05);
+    color: #00ff9c;
+}
+
+/* Title text */
+.modal-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #00ffcc;
+    text-shadow: 0 0 6px #00ffcc;
+}
+
+/* Input field */
+.search-input {
+    background: #101010;
+    border: 1px solid #00ff9c;
+    color: #fff;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    outline: none;
+    transition: all 0.2s ease-in-out;
+}
+
+    .search-input:focus {
+        border-color: #00e6ff;
+        box-shadow: 0 0 8px #00e6ff;
+    }
+
+/* Footer buttons */
+.modal-footer .btn-primary {
+    background: linear-gradient(90deg, #00ffcc, #00ff66);
+    border: none;
+    color: #000;
+    font-weight: bold;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+    .modal-footer .btn-primary:hover {
+        box-shadow: 0 0 10px #00ff99;
+    }
+
+.modal-footer .btn-dark {
+    background: #1c1c1c;
+    border: 1px solid #00ff9c;
+    color: #00ff9c;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+    .modal-footer .btn-dark:hover {
+        background: #00ff9c;
+        color: #000;
+    }
+
+/* Alert box */
+.alert-info {
+    background: rgba(0, 255, 156, 0.1);
+    border: 1px solid #00ff9c;
+    color: #00ffcc;
+    font-weight: 500;
+}
+

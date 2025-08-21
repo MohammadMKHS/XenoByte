@@ -1,0 +1,189 @@
+﻿@using XenoByte.Models.API
+@model AptGroupThreatIntelligenceModel
+
+@{
+    ViewData["Title"] = "APT Group Threat Intelligence Report";
+}
+<link href="~/css/apt-report.css" rel="stylesheet" />
+<div class="container mt-4">
+    <h1 class="mb-4 text-center">@Model.requested_group Threat Intelligence Report</h1>
+
+    <!-- MITRE ATT&CK INFO -->
+    <section class="mb-5">
+        <h2>MITRE ATT&CK Information</h2>
+        @if (Model.mitre_attack_info != null)
+        {
+            <p><strong>Name:</strong> @Model.mitre_attack_info.name</p>
+            <p><strong>Aliases:</strong> @Model.mitre_attack_info.aliases</p>
+            <p><strong>External ID:</strong> @Model.mitre_attack_info.external_id</p>
+            <p><strong>Source URL:</strong> <a href="@Model.mitre_attack_info.source_url" target="_blank">@Model.mitre_attack_info.source_url</a></p>
+            <p><strong>Country:</strong> @Model.mitre_attack_info.country</p>
+            <p><strong>Revoked:</strong> @(Model.mitre_attack_info.revoked ? "Yes" : "No")</p>
+            <p><strong>Created:</strong> @Model.mitre_attack_info.created</p>
+            <p><strong>Modified:</strong> @Model.mitre_attack_info.modified</p>
+            <p><strong>Description:</strong> @Model.mitre_attack_info.description</p>
+        }
+    </section>
+
+    <!-- ASSOCIATED CAMPAIGNS -->
+    <section class="mb-5">
+        <h2>Associated Campaigns</h2>
+        @if (Model.mitre_attack_info?.associated_campaigns?.Any() == true)
+        {
+            <ul>
+                @foreach (var camp in Model.mitre_attack_info.associated_campaigns)
+                {
+                    <li>
+                        <a href="@camp.url" target="_blank">@camp.name</a> - @camp.description
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No associated campaigns found.</p>
+        }
+    </section>
+
+    <!-- ASSOCIATED SOFTWARE -->
+    <section class="mb-5">
+        <h2>Associated Software / Tools</h2>
+        @if (Model.mitre_attack_info?.associated_software?.Any() == true)
+        {
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>ID</th>
+                        <th>Description</th>
+                        <th>URL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sw in Model.mitre_attack_info.associated_software)
+                    {
+                        <tr>
+                            <td>@sw.name</td>
+                            <td>@sw.id</td>
+                            <td>@sw.description</td>
+                            <td><a href="@sw.url" target="_blank">@sw.url</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No associated software/tools found.</p>
+        }
+    </section>
+
+    <!-- TECHNIQUES USED -->
+    <section class="mb-5">
+        <h2>Techniques Used</h2>
+        @if (Model.mitre_attack_info?.techniques_used?.Any() == true)
+        {
+            <ul>
+                @foreach (var tech in Model.mitre_attack_info.techniques_used)
+                {
+                    <li>
+                        <strong>@tech.name</strong> (@tech.id) - @tech.description
+                        <br /><a href="@tech.url" target="_blank">@tech.url</a>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No techniques recorded.</p>
+        }
+    </section>
+
+    <!-- INDICATORS OF COMPROMISE -->
+    <section class="mb-5">
+        <h2>Indicators of Compromise (IOCs)</h2>
+        @if (Model.indicators_of_compromise != null)
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>CVEs</h4>
+                    <ul>@foreach (var cve in Model.indicators_of_compromise.cves ?? new List<string>()) {
+                    <li>@cve</li>
+                }
+</ul>
+            </div>
+            <div class="col-md-6">
+                <h4>IPs</h4>
+                <ul>@foreach (var ip in Model.indicators_of_compromise.ips ?? new List<string>()) {
+                <li>@ip</li>
+                                }
+</ul>
+            </div>
+            <div class="col-md-6">
+                <h4>Domains</h4>
+                <ul>@foreach (var d in Model.indicators_of_compromise.domains ?? new List<string>()) {
+                <li>@d</li>
+                                }
+</ul>
+            </div>
+            <div class="col-md-6">
+                <h4>Hashes</h4>
+                <ul>@foreach (var h in Model.indicators_of_compromise.hashes ?? new List<string>()) {
+                <li>@h</li>
+                                }
+</ul>
+            </div>
+            <div class="col-md-12">
+                <h4>Others</h4>
+                <ul>@foreach (var o in Model.indicators_of_compromise.others ?? new List<string>()) {
+                <li>@o</li>
+                                }
+</ul>
+            </div>
+        </div>
+                }
+    </section>
+
+    <!-- RANSOMWARE WALLETS -->
+    <section class="mb-5">
+        <h2>Ransomware Wallet Addresses</h2>
+        @if (Model.ransomware_wallet_addresses?.Any() == true)
+        {
+            <ul>@foreach (var w in Model.ransomware_wallet_addresses) {
+            <li>@w</li>
+        }
+</ul>
+                }
+                else
+        {
+            <p>No ransomware wallet addresses listed.</p>
+        }
+    </section>
+
+    <!-- CITATIONS -->
+    <section class="mb-5">
+        <h2>Citations / References</h2>
+        @if (Model.mitre_attack_info?.citations?.Any() == true)
+        {
+            <ul>
+                @foreach (var c in Model.mitre_attack_info.citations)
+                {
+                    <li><a href="@c.url" target="_blank">@c.description</a></li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No citations available.</p>
+        }
+    </section>
+
+    <!-- OTX STATUS & DISCLAIMER -->
+    <section class="mb-5">
+        <h2>OTX Query Status</h2>
+        <p>@Model.otx_query_status</p>
+
+        <h2>Disclaimer</h2>
+        <p class="text-muted">@Model.disclaimer</p>
+    </section>
+</div>

@@ -3,17 +3,23 @@
 }
 
 <!-- Search and Typewriter Section -->
-@if (User.Identity.IsAuthenticated)
-{
-    <section class="search-section">
-        <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">Track and maintain your wallet</h1>
-        <div class="w-full flex flex-col items-center">
+<section class="search-section">
+    <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">Track and maintain your wallet</h1>
+    <div class="w-full flex flex-col items-center">
 
-            <span>DDL</span>
+        <select class="search-input" onchange="callXenoByteAPIs(this)">
+            <option value="">select value</option>
+            <option value="1">Get APT Group Threat Intelligence</option>
+            <option value="2">Trace Cryptocurrency Address or Transaction</option>
+            @if (User.Identity.IsAuthenticated)
+            {
+                
+            }
+        </select>
 
-        </div>
-    </section>
-}
+    </div>
+</section>
+
 
 <section class="search-section">
     <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">Uncover Illicit Crypto Activities</h1>
@@ -82,3 +88,4 @@
         </div>
     </div>
 </section>
+<script src="~/js/index.js"></script>

@@ -1,0 +1,71 @@
+﻿@using XenoByte.Models.API
+@model TraceCryptocurrencyAddressorTransactionModel
+
+@{
+    ViewData["Title"] = "Cryptocurrency Trace Report";
+}
+<link href="~/css/trace-report.css" rel="stylesheet" />
+<div class="content-section">
+    <h2>Basic Information</h2>
+    <div class="section-content">
+        <table>
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Requested Input</strong></td>
+                    <td>@Model.requested_input</td>
+                </tr>
+                <tr>
+                    <td><strong>Category</strong></td>
+                    <td>@Model.input_category</td>
+                </tr>
+                <tr>
+                    <td><strong>Crypto Type</strong></td>
+                    <td>@Model.crypto_type</td>
+                </tr>
+
+                @if (Model.report_data != null)
+                {
+                    <tr>
+                        <td><strong>Address</strong></td>
+                        <td>@Model.report_data.address</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Balance</strong></td>
+                        <td>@Model.report_data.balance</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Sent</strong></td>
+                        <td>@Model.report_data.total_sent</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Received</strong></td>
+                        <td>@Model.report_data.total_received</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transaction Count</strong></td>
+                        <td>@Model.report_data.transaction_count</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Last Seen</strong></td>
+                        <td>@Model.report_data.last_seen</td>
+                    </tr>
+                }
+
+                <tr>
+                    <td><strong>Status</strong></td>
+                    <td>@Model.status</td>
+                </tr>
+                <tr>
+                    <td><strong>Disclaimer</strong></td>
+                    <td class="text-muted">@Model.disclaimer</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
