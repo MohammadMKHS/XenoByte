@@ -9,10 +9,12 @@ namespace XenoByte.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         public IActionResult Index()
@@ -37,7 +39,8 @@ namespace XenoByte.Controllers
             var client = new HttpClient();
             var request = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:8000/public/apt?group={value}");
             request.Headers.Add("Accept", "application/json");
-            request.Headers.Add("X-API-Key", "b23f825b20c5c1c7470c8943115876ebcddaa132f854f759863200aba04dcddc");
+            var apiKey = Environment.GetEnvironmentVariable("XApiKey") ?? _configuration["ApiKeys:XApiKey"];
+            request.Headers.Add("X-API-Key", apiKey);
             var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -53,7 +56,8 @@ namespace XenoByte.Controllers
             var client = new HttpClient();
             var request = new HttpRequestMessage(HttpMethod.Get, $"http://127.0.0.1:8000/public/crypto_trace?input_string={value}");
             request.Headers.Add("Accept", "application/json");
-            request.Headers.Add("X-API-Key", "b23f825b20c5c1c7470c8943115876ebcddaa132f854f759863200aba04dcddc");
+            var apiKey = Environment.GetEnvironmentVariable("XApiKey") ?? _configuration["ApiKeys:XApiKey"];
+            request.Headers.Add("X-API-Key", apiKey);
             var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStringAsync();

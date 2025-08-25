@@ -1,18 +1,16 @@
 ﻿// --- Theme Toggle Logic ---
-const checkbox = document.getElementById('checkbox');
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const themeIcon = document.getElementById('themeIcon');
 const body = document.body;
-const themeText = document.getElementById('themeText');
 
 // Function to set the theme
 function setTheme(theme) {
     if (theme === 'light') {
         body.classList.add('light-theme');
-        checkbox.checked = true;
-        themeText.textContent = 'Light Mode';
+        themeIcon.textContent = 'light_mode'; // sun icon
     } else {
         body.classList.remove('light-theme');
-        checkbox.checked = false;
-        themeText.textContent = 'Dark Mode';
+        themeIcon.textContent = 'dark_mode'; // moon icon
     }
     localStorage.setItem('theme', theme);
 }
@@ -23,14 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setTheme(savedTheme);
 });
 
-// Toggle theme on switch change
-checkbox.addEventListener('change', () => {
-    if (checkbox.checked) {
-        setTheme('light');
-    } else {
-        setTheme('dark');
-    }
-});
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        const isLight = body.classList.contains('light-theme');
+        setTheme(isLight ? 'dark' : 'light');
+    });
+}
 
 // --- Typewriter Effect Logic ---
 const typewriterElement = document.getElementById('typewriter');
@@ -593,3 +589,20 @@ function SendWhatsappMessage() {
 
     window.open(whatsappUrl, "_blank");
 }
+
+//const okBtn = document.getElementById('okBtn'); // Your Ok button
+//const modalLoader = document.getElementById('modalLoader');
+
+//okBtn.addEventListener('click', function() {
+//    modalLoader.style.display = 'flex'; // Show loader
+
+//    // Call your API (example with fetch)
+//    fetch('/your/api/endpoint', { method: 'POST', body: ... })
+//        .then(response => response.json())
+//        .then(data => {
+//            // handle response
+//        })
+//        .finally(() => {
+//            modalLoader.style.display = 'none'; // Hide loader
+//        });
+//});

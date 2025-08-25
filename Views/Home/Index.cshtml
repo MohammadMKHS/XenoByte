@@ -4,7 +4,7 @@
 
 <!-- Search and Typewriter Section -->
 <section class="search-section">
-    <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">Track and maintain your wallet</h1>
+    <h1 class="xeno-heading">Track and maintain your wallet</h1>
     <div class="w-full flex flex-col items-center">
 
         <select class="search-input" onchange="callXenoByteAPIs(this)">
@@ -22,7 +22,7 @@
 
 
 <section class="search-section">
-    <h1 class="text-3xl md:text-4xl font-bold mb-4 text-white">Uncover Illicit Crypto Activities</h1>
+    <h1 class="xeno-heading">Uncover Illicit Crypto Activities</h1>
     <p id="typewriter" class="text-lg md:text-xl mb-6"></p>
     <div class="w-full flex flex-col items-center">
         <input type="text" id="addressInput" class="search-input" placeholder="Enter Address / Transaction Hash to Trace...">
@@ -88,4 +88,8 @@
         </div>
     </div>
 </section>
+<div id="modalLoader" class="modal-loader" style="display:none;">
+  <div class="loader-spinner"></div>
+</div>
 <script src="~/js/index.js"></script>
+<script src="~/js/mainJs.js"></script>

@@ -268,7 +268,7 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">${warningTitle}</h5>
-                        <button class="btn btn-close" type="button" data-dismiss="modal" aria-label="Close">
+                        <button class="btn btn-close" type="button" data-dismiss="modal" aria-label="Close" id="${ModalId}-close-btn">
                             <svg class="icon-back" width="20" height="20">
                                 <use xlink:href="#svg-close-ico"></use>
                             </svg>
@@ -286,7 +286,7 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
                     </div>
                     <div class="modal-footer d-flex justify-content-end">
                         <button class="btn btn-primary mx-3" type="button" id="${ModalId}-confirm-btn">${okButtonText}</button>
-                        <button class="btn btn-dark" type="button" data-dismiss="modal">${cancelButtonText}</button>
+                        <button class="btn btn-dark" type="button" id="${ModalId}-cancel-btn">${cancelButtonText}</button>
                     </div>
                 </div>
             </div>
@@ -315,10 +315,23 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
         $(`#${ModalId}`).modal('hide');
     });
 
-    $(`#${ModalId}`).on('hidden.bs.modal', function () {
+    // Cancel button handler
+    $(`#${ModalId}-cancel-btn`).on('click', function () {
         if (typeof onCancel === 'function') {
             onCancel();
         }
+        $(`#${ModalId}`).modal('hide');
+    });
+
+    // X (close) button handler
+    $(`#${ModalId}-close-btn`).on('click', function () {
+        if (typeof onCancel === 'function') {
+            onCancel();
+        }
+        $(`#${ModalId}`).modal('hide');
+    });
+
+    $(`#${ModalId}`).on('hidden.bs.modal', function () {
         $(`#${ModalId}`).remove();
     });
 }

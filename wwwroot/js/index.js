@@ -1,8 +1,6 @@
 ﻿function callXenoByteAPIs(sender) {
     let currentValue = sender.value;
 
-    console.log(currentValue);
-
     if (currentValue == 1) {
         showXenoByteAPICallModalWithCallbackFunction(
             "GetAPTGroupThreatIntelligenceModal",
@@ -11,9 +9,15 @@
             "Ok",
             "Cancle",
             function () {
-                let apiCallValue = document.getElementById('apiCallVelue').value;
+                // Show loader
+                document.getElementById('modalLoader').style.display = 'flex';
 
+                let apiCallValue = document.getElementById('apiCallVelue').value;
+                // Simulate API call or do your fetch here
+                // Example: fetch(...).then(...).finally(...)
                 window.location.href = `../Home/AptGroupThreatIntelligence?value=${apiCallValue}`;
+                // Hide loader if you use fetch, do it in .finally()
+                // document.getElementById('modalLoader').style.display = 'none';
             },
             function () {
                 console.log("User cancelled.");
@@ -27,9 +31,13 @@
             "Ok",
             "Cancle",
             function () {
-                let apiCallValue = document.getElementById('apiCallVelue').value;
+                // Show loader
+                document.getElementById('modalLoader').style.display = 'flex';
 
+                let apiCallValue = document.getElementById('apiCallVelue').value;
                 window.location.href = `../Home/TraceCryptocurrencyAddressorTransaction?value=${apiCallValue}`;
+                // Hide loader if you use fetch, do it in .finally()
+                // document.getElementById('modalLoader').style.display = 'none';
             },
             function () {
                 console.log("User cancelled.");
