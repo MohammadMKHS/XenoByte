@@ -43,5 +43,41 @@
                 console.log("User cancelled.");
             }
         );
+    } else if (currentValue == 3) {
+        showXenoByteAPICallModalWithCallbackFunction(
+            "PerformBitcoinTransactionHashAnalysisModal",
+            "Alert",
+            "(Required) The Bitcoin transaction hash for analysis.",
+            "Ok",
+            "Cancle",
+            function () {
+                // Show loader
+                document.getElementById('modalLoader').style.display = 'flex';
+
+                let apiCallValue = document.getElementById('apiCallVelue').value;
+                window.location.href = `../Home/PerformBitcoinTransactionHashAnalysis?value=${apiCallValue}`;
+            },
+            function () {
+                console.log("User cancelled.");
+            }
+        );
+    } else if (currentValue == 4) {
+        showXenoByteAPICallModalWithCallbackFunction(
+            "PerformBitcoinWalletForensicAnalysisModal",
+            "Alert",
+            "(Required) The Bitcoin wallet address for forensic analysis.<br> Maximum tracing depth (e.g., 1, 2, 3, or -1 for full depth). Default is 2.",
+            "Ok",
+            "Cancle",
+            function () {
+                // Show loader
+                document.getElementById('modalLoader').style.display = 'flex';
+
+                let apiCallValue = document.getElementById('apiCallVelue').value;
+                window.location.href = `../Home/PerformBitcoinWalletForensicAnalysis?value=${apiCallValue}`;
+            },
+            function () {
+                console.log("User cancelled.");
+            }
+        );
     }
 }

@@ -3,35 +3,31 @@
 }
 
 <!-- Search and Typewriter Section -->
-<section class="search-section">
+<section class="search-section mt-3">
     <h1 class="xeno-heading">Track and maintain your wallet</h1>
     <div class="w-full flex flex-col items-center">
-
-        <select class="search-input" onchange="callXenoByteAPIs(this)">
-            <option value="">select value</option>
-            <option value="1">Get APT Group Threat Intelligence</option>
-            <option value="2">Trace Cryptocurrency Address or Transaction</option>
-            @if (User.Identity.IsAuthenticated)
-            {
+        @if (User.Identity.IsAuthenticated)
+        {
+            <select class="search-input mt-3" onchange="callXenoByteAPIs(this)">
+                <option value="">Bitcoin Scan</option>
                 <option value="3">Perform Bitcoin Transaction Hash Analysis</option>
                 <option value="4">Perform Bitcoin Wallet Forensic Analysis</option>
                 <option value="5">Check Bitcoin Wallet Reputationv</option>
-                
-            }
-        </select>
-
+            </select>
+        }
     </div>
 </section>
 
 
 <section class="search-section">
     <h1 class="xeno-heading">Uncover Illicit Crypto Activities</h1>
-    <p id="typewriter" class="text-lg md:text-xl mb-6"></p>
     <div class="w-full flex flex-col items-center">
-        <input type="text" id="addressInput" class="search-input" placeholder="Enter Address / Transaction Hash to Trace...">
-        <button id="traceButton" class="search-button">
-            <i class="fas fa-search"></i> Trace
-        </button>
+
+        <select class="search-input" onchange="callXenoByteAPIs(this)">
+            <option value="">Public Scan</option>
+            <option value="1">Get APT Group Threat Intelligence</option>
+            <option value="2">Trace Cryptocurrency Address or Transaction</option>
+        </select>
     </div>
 </section>
 

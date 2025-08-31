@@ -1,0 +1,146 @@
+﻿@using XenoByte.Models.API.BitCoin
+@model PerformBitcoinWalletForensicAnalysisModel
+
+@{
+    ViewData["Title"] = "Bitcoin Wallet Forensic Report";
+    string FmtBtc(double? v) => v.HasValue ? v.Value.ToString("0.########") : "N/A";
+}
+<link href="~/css/wallet-forensic-report.css" rel="stylesheet" />
+<div class="content-section">
+    <!-- Target Wallet -->
+    <h2>Target Wallet</h2>
+    <div class="section-content">
+        <p><strong>Target Address:</strong> @Model.target_address</p>
+        <p><strong>Max Tracing Depth:</strong> @Model.max_tracing_depth</p>
+    </div>
+
+    <!-- Transaction Flow Graph -->
+    <h2>Transaction Flow Graph</h2>
+    <p>Visualization of transaction flow:</p>
+    <div class="graph-container">
+        @if (!string.IsNullOrEmpty(Model.transaction_graph_svg_base64))
+        {
+            <img src="@Model.transaction_graph_svg_base64" alt="Transaction Flow Graph" />
+        }
+        else
+        {
+            <p class="error-message">No graph available.</p>
+        }
+    </div>
+
+    <!-- Detailed Analysis -->
+    <h2>Wallets Detailed Analysis</h2>
+    @if (Model.analyzed_wallets?.Any() == true)
+    {
+        foreach (var wallet in Model.analyzed_wallets.Values)
+        {
+            <div class="wallet-summary-card">
+                <h3>Wallet: @wallet.address (Depth: @(wallet.depth ?? 0))</h3>
+                <p><strong>Balance:</strong> @FmtBtc(wallet.balance_btc) BTC</p>
+                <p><strong>Total Transactions:</strong> @(wallet.total_transactions ?? 0)</p>
+                <p><strong>Last Transaction:</strong> @wallet.last_transaction_time_utc</p>
+                <p><strong>Inferred Type:</strong> @wallet.wallet_type_inferred</p>
+                <p><strong>Total Incoming (traced):</strong> @FmtBtc(wallet.incoming_tx_value_sum_traced) BTC</p>
+                <p><strong>Total Outgoing (traced):</strong> @FmtBtc(wallet.outgoing_tx_value_sum_traced) BTC</p>
+
+                @if (wallet.ransomware_family_api?.Any() == true)
+                {
+                    <p><strong>Associated Ransomware Family:</strong> @string.Join(", ", wallet.ransomware_family_api)</p>
+                }
+
+                @if (wallet.chainabuse_reports != null)
+                {
+                    <p>
+                        <strong>Chainabuse Reports:</strong> @wallet.chainabuse_reports.total_reports_count
+                        @if (!string.IsNullOrWhiteSpace(wallet.chainabuse_reports.url_scraped))
+                        {
+                            <span> — <a href="@wallet.chainabuse_reports.url_scraped" target="_blank">Source</a></span>
+                        }
+                    </p>
+
+                    @if (wallet.chainabuse_reports.reports?.Any() == true)
+                    {
+                        <h4>Detailed Chainabuse Reports:</h4>
+
+                        @for (var i = 0; i < wallet.chainabuse_reports.reports.Count; i++)
+                        {
+                            var rep = wallet.chainabuse_reports.reports[i];
+
+                            <div class="chainabuse-report-card">
+                                <h5>Report @(i + 1): @rep.category</h5>
+
+                                @if (!string.IsNullOrWhiteSpace(rep.description))
+                                {
+                                    <p><strong>Description:</strong> @rep.description</p>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(rep.submitted_by))
+                                {
+                                    <p><strong>Submitted By:</strong> @rep.submitted_by</p>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(rep.submitted_date))
+                                {
+                                    <p><strong>Submitted Date:</strong> @rep.submitted_date</p>
+                                }
+
+                                @if (rep.reported_addresses?.Any() == true)
+                                {
+                                    <p><strong>Reported Addresses:</strong> @string.Join(", ", rep.reported_addresses)</p>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p><em>No detailed Chainabuse report items provided.</em></p>
+                    }
+                }
+
+                @if (wallet.red_flags?.Any() == true)
+                {
+                    <h4>Reputation Flags:</h4>
+                    <ul>
+                        @foreach (var flag in wallet.red_flags)
+                        {
+                            <li>@flag</li>
+                        }
+                    </ul>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p>No wallets analyzed.</p>
+    }
+
+    <!-- Transaction Graph Edges -->
+    <h2>Transaction Edges</h2>
+    @if (Model.transaction_graph_edges?.Any() == true)
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Sender</th>
+                    <th>Receiver</th>
+                    <th>Amount (BTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var edge in Model.transaction_graph_edges)
+                {
+                    <tr>
+                        <td>@edge.sender</td>
+                        <td>@edge.receiver</td>
+                        <td>@FmtBtc(edge.amount_btc)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No transaction edges recorded.</p>
+    }
+</div>

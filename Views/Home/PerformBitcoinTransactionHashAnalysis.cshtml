@@ -1,0 +1,168 @@
+﻿@using XenoByte.Models.API.BitCoin
+@model PerformBitcoinTransactionHashAnalysisModel
+
+@{
+    ViewData["Title"] = "Bitcoin Transaction Report";
+    string FmtBtc(double v) => v.ToString("0.########");
+}
+<link href="~/css/trace-report.css" rel="stylesheet" />
+<!-- Page Content (no header/footer) -->
+<div class="content-section">
+    <!-- Transaction Summary -->
+    <h2>Transaction Summary</h2>
+    <div class="section-content">
+        @if (Model?.transaction_summary != null)
+        {
+            <p><strong>Hash:</strong> @Model.transaction_summary.hash</p>
+            <p><strong>Time (UTC):</strong> @Model.transaction_summary.time_utc</p>
+            <p><strong>Block Height:</strong> @Model.transaction_summary.block_height</p>
+            <p><strong>Transaction Fee:</strong> @FmtBtc(Model.transaction_summary.transaction_fee_btc) BTC (@Model.transaction_summary.transaction_fee_satoshi sat)</p>
+            <p><strong>Size:</strong> @Model.transaction_summary.size_bytes bytes</p>
+            <p><strong>Total Input Value:</strong> @FmtBtc(Model.transaction_summary.total_input_value_btc) BTC (@Model.transaction_summary.total_input_value_satoshi sat)</p>
+            <p><strong>Total Output Value:</strong> @FmtBtc(Model.transaction_summary.total_output_value_btc) BTC (@Model.transaction_summary.total_output_value_satoshi sat)</p>
+        }
+        else
+        {
+            <p class="error-message">No transaction summary available.</p>
+        }
+    </div>
+
+    <!-- Sender Wallets -->
+    <h2>Sender Wallets (@(Model?.sender_wallets?.Count ?? 0))</h2>
+    <div class="section-content">
+        @if (Model?.sender_wallets?.Any() == true)
+        {
+            foreach (var s in Model.sender_wallets)
+            {
+                <div class="wallet-summary-card">
+                    <h4>Sender Address: @s.address</h4>
+                    <p><strong>Amount Sent:</strong> @FmtBtc(s.amount_sent_btc) BTC (@s.amount_sent_satoshi sat)</p>
+                    <p><strong>Inferred Type:</strong> @s.inferred_type</p>
+
+                    @if (s.chainabuse_reports != null)
+                    {
+                        <p><strong>Chainabuse Reports:</strong> @s.chainabuse_reports.total_reports_count</p>
+                        @* If you eventually change List<object> → List<Report>, these cards will render details *@
+                        if (s.chainabuse_reports.reports is IEnumerable<object> repList && repList.Any())
+                        {
+                            foreach (var obj in repList)
+                            {
+                                var rep = obj as Report;
+                                if (rep != null)
+                                {
+                                    <div class="chainabuse-report-card">
+                                        <h5>Report: @rep.category</h5>
+                                        <p><strong>Description:</strong> @rep.description</p>
+                                        <p><strong>Submitted By:</strong> @rep.submitted_by</p>
+                                        <p><strong>Submitted Date:</strong> @rep.submitted_date</p>
+                                        @if (rep.reported_addresses?.Any() == true)
+                                        {
+                                            <p><strong>Reported Addresses:</strong> @string.Join(", ", rep.reported_addresses)</p>
+                                        }
+                                    </div>
+                                }
+                            }
+                        }
+                    }
+
+                    @if (s.reputation_flags?.Any() == true)
+                    {
+                        <p><strong>Reputation Flags:</strong></p>
+                        <ul>
+                            @foreach (var flag in s.reputation_flags)
+                            {
+                                <li class="red-flag">@flag</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p><strong>Reputation Flags:</strong></p>
+                        <ul><li>No known reputation flags.</li></ul>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p>No sender wallets found.</p>
+        }
+    </div>
+
+    <!-- Receiver Wallets -->
+    <h2>Receiver Wallets (@(Model?.receiver_wallets?.Count ?? 0))</h2>
+    <div class="section-content">
+        @if (Model?.receiver_wallets?.Any() == true)
+        {
+            foreach (var r in Model.receiver_wallets)
+            {
+                <div class="wallet-summary-card">
+                    <h4>Receiver Address: @r.address</h4>
+                    <p><strong>Amount Received:</strong> @FmtBtc(r.amount_received_btc) BTC (@r.amount_received_satoshi sat)</p>
+                    <p><strong>Inferred Type:</strong> @r.inferred_type</p>
+
+                    @if (r.chainabuse_reports != null)
+                    {
+                        <p><strong>Chainabuse Reports:</strong> @r.chainabuse_reports.total_reports_count</p>
+
+                        @* If List<object> becomes List<Report>, render detail cards *@
+                        if (r.chainabuse_reports.reports is IEnumerable<object> repList && repList.Any())
+                        {
+                            <h4>Detailed Chainabuse Reports for this Receiver:</h4>
+                            foreach (var obj in repList)
+                            {
+                                var rep = obj as Report;
+                                if (rep != null)
+                                {
+                                    <div class="chainabuse-report-card">
+                                        <h5>Report: @rep.category</h5>
+                                        <p><strong>Description:</strong> @rep.description</p>
+                                        <p><strong>Submitted By:</strong> @rep.submitted_by</p>
+                                        <p><strong>Submitted Date:</strong> @rep.submitted_date</p>
+                                        @if (rep.reported_addresses?.Any() == true)
+                                        {
+                                            <p><strong>Reported Addresses:</strong> @string.Join(", ", rep.reported_addresses)</p>
+                                        }
+                                    </div>
+                                }
+                            }
+                        }
+                    }
+
+                    @if (r.reputation_flags?.Any() == true)
+                    {
+                        <p><strong>Reputation Flags:</strong></p>
+                        <ul>
+                            @foreach (var flag in r.reputation_flags)
+                            {
+                                <li class="red-flag">@flag</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p><strong>Reputation Flags:</strong></p>
+                        <ul><li>No known reputation flags.</li></ul>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p>No receiver wallets found.</p>
+        }
+    </div>
+
+    <!-- Request Details + Disclaimer -->
+    <h2>Request Details</h2>
+    <div class="section-content">
+        <p><strong>Requested Input:</strong> @Model.requested_input</p>
+        <p><strong>Input Category:</strong> @Model.input_category</p>
+        <p><strong>Crypto Type:</strong> @Model.crypto_type</p>
+    </div>
+
+    <h2>Disclaimer</h2>
+    <div class="section-content">
+        <p class="text-muted">@Model.disclaimer</p>
+    </div>
+</div>

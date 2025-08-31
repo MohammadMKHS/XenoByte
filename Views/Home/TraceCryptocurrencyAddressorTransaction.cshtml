@@ -29,7 +29,7 @@
                     <td>@Model.crypto_type</td>
                 </tr>
 
-                @if (Model.report_data != null)
+                @if (Model.report_data != null && Model.report_data.address != null)
                 {
                     <tr>
                         <td><strong>Address</strong></td>
@@ -54,6 +54,33 @@
                     <tr>
                         <td><strong>Last Seen</strong></td>
                         <td>@Model.report_data.last_seen</td>
+                    </tr>
+                }
+                else if (Model.report_data != null && Model.report_data.hash != null)
+                {
+                    <tr>
+                        <td><strong>Hash</strong></td>
+                        <td>@Model.report_data.hash</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sender</strong></td>
+                        <td>@Model.report_data.sender</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Receiver</strong></td>
+                        <td>@Model.report_data.receiver</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transaction value</strong></td>
+                        <td>@Model.report_data.value</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Block Number</strong></td>
+                        <td>@Model.report_data.block_number</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Timestamp</strong></td>
+                        <td>@Model.report_data.timestamp</td>
                     </tr>
                 }
 

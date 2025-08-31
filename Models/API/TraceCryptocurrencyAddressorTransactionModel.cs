@@ -8,6 +8,15 @@
         public string total_received { get; set; }
         public int transaction_count { get; set; }
         public string last_seen { get; set; }
+
+
+        public string hash { get; set; }
+        public string sender { get; set; }
+        public string receiver { get; set; }
+        public string value { get; set; }
+        public int block_number { get; set; }
+        public string timestamp { get; set; }
+
     }
 
     public class TraceCryptocurrencyAddressorTransactionModel
