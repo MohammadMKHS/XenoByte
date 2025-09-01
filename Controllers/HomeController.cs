@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Diagnostics;
@@ -118,6 +119,7 @@ namespace XenoByte.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> PerformBitcoinTransactionHashAnalysis(string value)
         {
@@ -143,6 +145,7 @@ namespace XenoByte.Controllers
 
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> PerformBitcoinWalletForensicAnalysis(string value)
         {
@@ -167,6 +170,7 @@ namespace XenoByte.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> CheckBitcoinWalletReputation(string value)
         {
@@ -191,6 +195,7 @@ namespace XenoByte.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> PerformEthereumTransactionHashAnalysis(string value)
         {
