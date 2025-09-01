@@ -1,0 +1,232 @@
+﻿@model CheckFileHashReputationModel
+
+@{
+    ViewData["Title"] = "File Hash Reputation Report";
+
+    string Safe(string s) => string.IsNullOrWhiteSpace(s) ? "N/A" : s;
+    string VerdictClass(string v)
+    {
+        if (string.IsNullOrWhiteSpace(v)) return "verdict-clean";
+        var low = v.Trim().ToLowerInvariant();
+        if (low.Contains("malicious") || low.Contains("suspicious") || low.Contains("high"))
+            return "verdict-malicious";
+        return "verdict-clean";
+    }
+
+    string JoinStr(IEnumerable<string> vals) => (vals == null || !vals.Any()) ? "—" : string.Join(", ", vals);
+    string JoinObj(IEnumerable<object> vals)
+        => (vals == null || !vals.Any()) ? "—" : string.Join(", ", vals.Select(o => o?.ToString()).Where(x => !string.IsNullOrWhiteSpace(x)));
+}
+
+<!-- Reuse your neon content CSS -->
+<link rel="stylesheet" href="~/css/wallet-forensic-report.css" />
+
+<div class="content-section">
+    <!-- Hash Analysis Result -->
+    <h2>Hash Analysis Result</h2>
+    <p><strong>Queried Hash:</strong> @Safe(Model?.hash) (@Safe(Model?.hash_type))</p>
+    <p>
+        <strong>Overall Verdict:</strong>
+        <span class="@VerdictClass(Model?.verdict)">@Safe(Model?.verdict)</span>
+    </p>
+    <p><strong>Status:</strong> @Safe(Model?.status)</p>
+
+    <!-- Pulse / Threat Intel -->
+    <h3>Associated Threat Intelligence Pulses (@(Model?.pulse_count ?? 0))</h3>
+    @if (Model?.pulse_details?.Any() == true)
+    {
+        var idx = 1;
+        foreach (var pulse in Model.pulse_details)
+        {
+            <div class="section-content">
+                <h4>Pulse @idx: @Safe(pulse.name)</h4>
+                <p><strong>ID:</strong> @Safe(pulse.id)</p>
+                <p><strong>TLP:</strong> @Safe(pulse.tlp)</p>
+                @if (pulse.tags?.Any() == true)
+                {
+                    <p><strong>Tags:</strong> @JoinStr(pulse.tags)</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(pulse.description))
+                {
+                    <p><strong>Description:</strong> @pulse.description</p>
+                }
+            </div>
+            idx++;
+        }
+    }
+    else
+    {
+        <div class="section-content"><p><em>No associated pulses.</em></p></div>
+    }
+
+    <!-- File Metadata -->
+    <h2>File Metadata</h2>
+    <div class="section-content">
+        <table>
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>MD5</strong></td><td>@Safe(Model?.md5)</td></tr>
+                <tr><td><strong>SHA1</strong></td><td>@Safe(Model?.sha1)</td></tr>
+                <tr><td><strong>SHA256</strong></td><td>@Safe(Model?.sha256)</td></tr>
+                <tr><td><strong>File Size</strong></td><td>@Safe(Model?.file_size)</td></tr>
+                <tr><td><strong>File Type</strong></td><td>@Safe(Model?.file_type)</td></tr>
+                <tr><td><strong>Malware Family</strong></td><td>@Safe(Model?.malware_family)</td></tr>
+                <tr><td><strong>First Submission</strong></td><td>@Safe(Model?.first_submission_date)</td></tr>
+                <tr><td><strong>Last Analysis</strong></td><td>@Safe(Model?.last_analysis_date)</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Related IOCs -->
+    <h2>Related Indicators of Compromise (IOCs)</h2>
+    @if (Model?.related_iocs == null)
+    {
+        <div class="section-content"><p><em>No related IOC data.</em></p></div>
+    }
+    else
+    {
+        <!-- IPs -->
+        <h3>IPs</h3>
+        <div class="section-content">
+            @if (Model.related_iocs.ips?.Any() == true)
+            {
+                <ul>
+                    @foreach (var ip in Model.related_iocs.ips)
+                    {
+                        <li>@ip</li>
+                    }
+                </ul>
+            }
+            else
+            {
+
+                <p>—</p>
+            }
+        </div>
+
+        <!-- Domains -->
+        <h3>Domains</h3>
+        <div class="section-content">
+            @if (Model.related_iocs.domains?.Any() == true)
+            {
+                <ul>
+                    @foreach (var d in Model.related_iocs.domains)
+                    {
+                        <li>@d</li>
+                    }
+                </ul>
+            }
+            else
+            {
+
+                <p>—</p>
+            }
+        </div>
+
+        <!-- Hashes -->
+        <h3>Hashes</h3>
+        <div class="section-content">
+            @if (Model.related_iocs.hashes?.Any() == true)
+            {
+                <table>
+                    <thead><tr><th>Hash</th></tr></thead>
+                    <tbody>
+                        @foreach (var h in Model.related_iocs.hashes)
+                        {
+                            <tr><td>@h</td></tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+
+                <p>—</p>
+            }
+        </div>
+
+        <!-- URLs -->
+        <h3>URLs</h3>
+        <div class="section-content">
+            @if (Model.related_iocs.urls?.Any() == true)
+            {
+                <table>
+                    <thead><tr><th>URL</th></tr></thead>
+                    <tbody>
+                        @foreach (var u in Model.related_iocs.urls)
+                        {
+                            <tr><td><a href="@u" target="_blank">@u</a></td></tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+
+                <p>—</p>
+            }
+        </div>
+
+        <!-- Emails -->
+        <h3>Emails</h3>
+        <div class="section-content">
+            @if (Model.related_iocs.emails?.Any() == true)
+            {
+                <ul>
+                    @foreach (var e in Model.related_iocs.emails)
+                    {
+                        <li>@e</li>
+                    }
+                </ul>
+            }
+            else
+            {
+
+                <p>—</p>
+            }
+        </div>
+
+        <!-- CVEs -->
+        <h3>CVEs</h3>
+        <div class="section-content">
+            @if (Model.related_iocs.cves?.Any() == true)
+            {
+                <ul>
+                    @foreach (var c in Model.related_iocs.cves)
+                    {
+                        <li>@c</li>
+                    }
+                </ul>
+            }
+            else
+            {
+
+                <p>—</p>
+            }
+        </div>
+
+        <!-- Others -->
+        <h3>Other Indicators</h3>
+        <div class="section-content">
+            @if (Model.related_iocs.others?.Any() == true)
+            {
+                <ul>
+                    @foreach (var o in Model.related_iocs.others)
+                    {
+                        <li>@o</li>
+                    }
+                </ul>
+            }
+            else
+            {
+
+                <p>—</p>
+            }
+        </div>
+    }
+</div>

@@ -335,3 +335,41 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
         $(`#${ModalId}`).remove();
     });
 }
+
+
+function showComingSoonPopup(ModalId) {
+    ModalId = ModalId || "Modal-ComingSoon";
+
+    let modalHtml = `
+        <div class="modal fade" id="${ModalId}" tabindex="-1" role="dialog" aria-labelledby="${ModalId}-label" aria-hidden="true">
+            <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+                <div class="modal-content text-center">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title w-100" id="${ModalId}-label">🚀 Coming Soon</h5>
+                        <button class="btn btn-close" type="button" data-dismiss="modal" aria-label="Close" id="${ModalId}-close-btn"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="lead mb-0">This feature will be available in the UI soon. Stay tuned!</p>
+                    </div>
+                    <div class="modal-footer border-0 d-flex justify-content-center">
+                        <button class="btn btn-primary" type="button" id="${ModalId}-ok-btn">Got it</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+
+    $(`#${ModalId}`).modal('show');
+
+    // Close on button click
+    $(`#${ModalId}-ok-btn, #${ModalId}-close-btn`).on('click', function () {
+        $(`#${ModalId}`).modal('hide');
+    });
+
+    // Remove modal after hide
+    $(`#${ModalId}`).on('hidden.bs.modal', function () {
+        $(`#${ModalId}`).remove();
+    });
+}

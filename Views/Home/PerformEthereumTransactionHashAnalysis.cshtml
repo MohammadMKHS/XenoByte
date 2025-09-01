@@ -1,0 +1,194 @@
+﻿@using XenoByte.Models.API.Ethereum
+@model PerformEthereumTransactionHashAnalysisModel
+
+@{
+    ViewData["Title"] = "Ethereum Transaction Report";
+
+    // Helpers (no overload conflicts)
+    string FmtEth(double v) => v.ToString("0.################");
+    string FmtWei(long v) => v.ToString("N0");
+    string Safe(string s) => string.IsNullOrWhiteSpace(s) ? "N/A" : s;
+}
+
+<link rel="stylesheet" href="~/css/wallet-forensic-report.css" />
+
+<div class="content-section">
+    <!-- Transaction Summary -->
+    <h2>Transaction Summary</h2>
+    <div class="section-content">
+        <p><strong>Hash:</strong> @Safe(Model?.transaction_summary?.hash)</p>
+        <p><strong>Time (UTC):</strong> @Safe(Model?.transaction_summary?.time_utc)</p>
+        <p><strong>Block Height:</strong> @(Model?.transaction_summary?.block_height)</p>
+        <p>
+            <strong>Transaction Fee:</strong>
+            @FmtEth(Model?.transaction_summary?.transaction_fee_eth ?? 0)
+            ETH (@FmtWei(Model?.transaction_summary?.transaction_fee_wei ?? 0) wei)
+        </p>
+        <p><strong>Size:</strong> @Safe(Model?.transaction_summary?.size_bytes) bytes</p>
+        <p>
+            <strong>Total Input Value:</strong>
+            @FmtEth(Model?.transaction_summary?.total_input_value_eth ?? 0)
+            ETH (@FmtWei(Model?.transaction_summary?.total_input_value_wei ?? 0) wei)
+        </p>
+        <p>
+            <strong>Total Output Value:</strong>
+            @FmtEth(Model?.transaction_summary?.total_output_value_eth ?? 0)
+            ETH (@FmtWei(Model?.transaction_summary?.total_output_value_wei ?? 0) wei)
+        </p>
+    </div>
+
+    <!-- Sender Wallets -->
+    <h2>Sender Wallets (@(Model?.sender_wallets?.Count ?? 0))</h2>
+    <div class="section-content">
+        @if (Model?.sender_wallets?.Any() == true)
+        {
+            foreach (var s in Model.sender_wallets)
+            {
+                <div class="wallet-summary-card">
+                    <h4>Sender Address: @s.address</h4>
+                    <p><strong>Amount Sent:</strong> @FmtEth(s.amount_sent_eth) ETH (@FmtWei(s.amount_sent_wei) wei)</p>
+                    <p><strong>Inferred Type:</strong> @Safe(s.inferred_type)</p>
+
+                    <p><strong>Reputation Flags:</strong></p>
+                    @if (s.reputation_flags?.Any() == true)
+                    {
+                        <ul>
+                            @foreach (var f in s.reputation_flags)
+                            {
+                                <li class="red-flag">@f</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <ul><li>No known reputation flags.</li></ul>
+                    }
+
+                    @if (s.chainabuse_reports != null)
+                    {
+                        <p><strong>Chainabuse Reports:</strong> @s.chainabuse_reports.total_reports_count</p>
+
+                        @if (s.chainabuse_reports.reports?.Any() == true)
+                        {
+                            <h4>Detailed Chainabuse Reports:</h4>
+
+                            var i = 1;
+                            foreach (var rep in s.chainabuse_reports.reports)
+                            {
+                                <div class="chainabuse-report-card">
+                                    <h5>Report @i: @rep.category</h5>
+                                    @if (!string.IsNullOrWhiteSpace(rep.description))
+                                    {
+                                        <p><strong>Description:</strong> @rep.description</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(rep.submitted_by))
+                                    {
+                                        <p><strong>Submitted By:</strong> @rep.submitted_by</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(rep.submitted_date))
+                                    {
+                                        <p><strong>Submitted Date:</strong> @rep.submitted_date</p>
+                                    }
+                                    @if (rep.reported_addresses?.Any() == true)
+                                    {
+                                        <p><strong>Reported Addresses:</strong> @string.Join(", ", rep.reported_addresses)</p>
+                                    }
+                                </div>
+                                i++;
+                            }
+
+                        }
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p>No sender wallets found.</p>
+        }
+    </div>
+
+    <!-- Receiver Wallets -->
+    <h2>Receiver Wallets (@(Model?.receiver_wallets?.Count ?? 0))</h2>
+    <div class="section-content">
+        @if (Model?.receiver_wallets?.Any() == true)
+        {
+            foreach (var r in Model.receiver_wallets)
+            {
+                <div class="wallet-summary-card">
+                    <h4>Receiver Address: @r.address</h4>
+                    <p><strong>Amount Received:</strong> @FmtEth(r.amount_received_eth) ETH (@FmtWei(r.amount_received_wei) wei)</p>
+                    <p><strong>Inferred Type:</strong> @Safe(r.inferred_type)</p>
+
+                    <p><strong>Reputation Flags:</strong></p>
+                    @if (r.reputation_flags?.Any() == true)
+                    {
+                        <ul>
+                            @foreach (var f in r.reputation_flags)
+                            {
+                                <li class="red-flag">@f</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <ul><li>No known reputation flags.</li></ul>
+                    }
+
+                    @if (r.chainabuse_reports != null)
+                    {
+                        <p><strong>Chainabuse Reports:</strong> @r.chainabuse_reports.total_reports_count</p>
+
+                        @if (r.chainabuse_reports.reports?.Any() == true)
+                        {
+                            <h4>Detailed Chainabuse Reports:</h4>
+
+                            var i = 1;
+                            foreach (var rep in r.chainabuse_reports.reports)
+                            {
+                                <div class="chainabuse-report-card">
+                                    <h5>Report @i: @rep.category</h5>
+                                    @if (!string.IsNullOrWhiteSpace(rep.description))
+                                    {
+                                        <p><strong>Description:</strong> @rep.description</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(rep.submitted_by))
+                                    {
+                                        <p><strong>Submitted By:</strong> @rep.submitted_by</p>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(rep.submitted_date))
+                                    {
+                                        <p><strong>Submitted Date:</strong> @rep.submitted_date</p>
+                                    }
+                                    @if (rep.reported_addresses?.Any() == true)
+                                    {
+                                        <p><strong>Reported Addresses:</strong> @string.Join(", ", rep.reported_addresses)</p>
+                                    }
+                                </div>
+                                i++;
+                            }
+
+                        }
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p>No receiver wallets found.</p>
+        }
+    </div>
+
+    <!-- Request Details + Disclaimer -->
+    <h2>Request Details</h2>
+    <div class="section-content">
+        <p><strong>Requested Input:</strong> @Safe(Model?.requested_input)</p>
+        <p><strong>Input Category:</strong> @Safe(Model?.input_category)</p>
+        <p><strong>Crypto Type:</strong> @Safe(Model?.crypto_type)</p>
+    </div>
+
+    <h2>Disclaimer</h2>
+    <div class="section-content">
+        <p class="text-muted">@Safe(Model?.disclaimer)</p>
+    </div>
+</div>

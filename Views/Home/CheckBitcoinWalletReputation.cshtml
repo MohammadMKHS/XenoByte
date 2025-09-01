@@ -1,0 +1,146 @@
+﻿@using XenoByte.Models.API.BitCoin
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+@model CheckBitcoinWalletReputationModel
+
+@{
+    ViewData["Title"] = "Wallet Reputation Report";
+
+    string RiskClass()
+    {
+        var hasRansom = Model.is_ransomware_local || Model.is_ransomware_api;
+        var hasFlags  = (Model.red_flags?.Count ?? 0) > 0;
+        if (hasRansom || hasFlags) return "malicious";
+        // feel free to tweak to add a “suspicious” bucket
+        return "clean";
+    }
+
+    string Check(bool v) => v ? "✔" : "—";
+
+    // Safe join
+    string Join(IEnumerable<string> items) => items == null ? "N/A" : string.Join(", ", items);
+}
+
+<link href="~/css/wallet-forensic-report.css" rel="stylesheet" />
+
+<div class="content-section">
+    <div class="reputation-score @RiskClass()">
+        Overall Reputation:
+        @if (RiskClass() == "malicious")
+        {
+            <span>🔴 HIGH RISK</span>
+        }
+        else if (RiskClass() == "suspicious")
+        {
+
+            <span>🟡 SUSPICIOUS</span>
+        }
+        else
+        {
+
+            <span>🟢 LIKELY CLEAN / LOW RISK</span>
+        }
+    </div>
+
+    <h2>Basic Information</h2>
+    <div class="section-content">
+        <p class="info-item"><strong>Current Balance:</strong> @Model.balance_btc.ToString("0.########") BTC</p>
+        <p class="info-item"><strong>Total Transactions:</strong> @Model.total_transactions</p>
+        <p class="info-item"><strong>Last Transaction:</strong> @(string.IsNullOrWhiteSpace(Model.last_transaction_time_utc) ? "N/A" : Model.last_transaction_time_utc)</p>
+        <p class="info-item"><strong>Blockchain Type:</strong> @(string.IsNullOrWhiteSpace(Model.blockchain_type) ? "Unknown" : Model.blockchain_type)</p>
+        <p class="info-item"><strong>Inferred Wallet Type:</strong> @(string.IsNullOrWhiteSpace(Model.wallet_type_inferred) ? "Uncertain" : Model.wallet_type_inferred)</p>
+    </div>
+
+    <h2>Threat Intelligence</h2>
+    <div class="section-content">
+        <p>
+            <strong>Ransomware (Local DB):</strong> @(Model.is_ransomware_local ? "Yes" : "No")
+            &nbsp;|&nbsp;
+            <strong>Ransomware (API):</strong> @(Model.is_ransomware_api ? "Yes" : "No")
+        </p>
+        <p><strong>Families (API):</strong> @Join(Model.ransomware_family_api)</p>
+
+        @if (Model.red_flags?.Any() == true)
+        {
+            <h3>Red Flags</h3>
+            <ul>
+                @foreach (var f in Model.red_flags) { <li class="threat-detected">@f</li> }
+            </ul>
+        }
+    </div>
+
+    <h2>Behavioral & Pattern Analysis</h2>
+    <div class="section-content">
+        <ul>
+            <li><span class="@(Model.extremely_rapid_transactions_detected ? "analysis-flag" : "analysis-clean")">@Check(Model.extremely_rapid_transactions_detected)</span> Extremely rapid transactions</li>
+            <li><span class="@(Model.rapid_transactions_detected ? "analysis-flag" : "analysis-clean")">@Check(Model.rapid_transactions_detected)</span> Rapid transactions (≤ 5 minutes)</li>
+            <li><span class="@(Model.frequent_transactions_detected ? "analysis-flag" : "analysis-clean")">@Check(Model.frequent_transactions_detected)</span> Frequent transactions (≤ 5 days)</li>
+            <li><span class="@(Model.automated_transactions_detected ? "analysis-flag" : "analysis-clean")">@Check(Model.automated_transactions_detected)</span> Automated patterns (5s–1min)</li>
+            <li><span class="@(Model.high_transaction_count ? "analysis-flag" : "analysis-clean")">@Check(Model.high_transaction_count)</span> High transaction count</li>
+            <li><span class="@(Model.large_amount_received ? "analysis-flag" : "analysis-clean")">@Check(Model.large_amount_received)</span> Unusually large amounts received</li>
+            <li><span class="@(Model.dust_attack_pattern ? "analysis-flag" : "analysis-clean")">@Check(Model.dust_attack_pattern)</span> Dust attack pattern</li>
+            <li><span class="@(Model.high_transaction_fee_detected ? "analysis-flag" : "analysis-clean")">@Check(Model.high_transaction_fee_detected)</span> High transaction fee detected</li>
+            <li><strong>Automated Tx Time Diff:</strong> @(string.IsNullOrWhiteSpace(Model.automated_transactions_time_diff) ? "N/A" : Model.automated_transactions_time_diff)</li>
+            <li><span class="@(Model.dormant_for_over_a_year ? "analysis-flag" : "analysis-clean")">@Check(Model.dormant_for_over_a_year)</span> Dormant for over a year</li>
+        </ul>
+    </div>
+
+    <h2>Chainabuse Reports</h2>
+    <div class="section-content">
+        @if (Model.chainabuse_reports != null)
+        {
+            <p>
+                <strong>Total Reports:</strong> @Model.chainabuse_reports.total_reports_count
+                @if (!string.IsNullOrWhiteSpace(Model.chainabuse_reports.url_scraped))
+                {
+                    <span> — <a href="@Model.chainabuse_reports.url_scraped" target="_blank">Source</a></span>
+                }
+            </p>
+
+            @if (Model.chainabuse_reports.reports is IEnumerable<object> reps && reps.Any())
+            {
+                var idx = 1;
+                foreach (var obj in reps)
+                {
+                    // Try to read fields from List<object> using JObject
+                    JObject jo = (obj as JObject) ?? JObject.FromObject(obj);
+                    var category = (string?)jo["category"];
+                    var description = (string?)jo["description"];
+                    var submittedBy = (string?)jo["submitted_by"];
+                    var submittedDate = (string?)jo["submitted_date"];
+                    var reportedAddrs = jo["reported_addresses"]?.ToObject<List<string>>() ?? new List<string>();
+
+                    <div class="chainabuse-report-card">
+                        <h5>Report @idx: @(string.IsNullOrWhiteSpace(category) ? "Unspecified" : category)</h5>
+                        @if (!string.IsNullOrWhiteSpace(description))
+                        {
+                            <p><strong>Description:</strong> @description</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(submittedBy))
+                        {
+                            <p><strong>Submitted By:</strong> @submittedBy</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(submittedDate))
+                        {
+                            <p><strong>Submitted Date:</strong> @submittedDate</p>
+                        }
+                        @if (reportedAddrs.Any())
+                        {
+                            <p><strong>Reported Addresses:</strong> @string.Join(", ", reportedAddrs)</p>
+                        }
+                    </div>
+
+                    idx++;
+                }
+            }
+            else
+            {
+                <p><em>No detailed report items.</em></p>
+            }
+        }
+        else
+        {
+            <p><em>No Chainabuse data.</em></p>
+        }
+    </div>
+</div>

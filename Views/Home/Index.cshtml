@@ -10,9 +10,15 @@
         {
             <select class="search-input mt-3" onchange="callXenoByteAPIs(this)">
                 <option value="">Bitcoin Scan</option>
-                <option value="3">Perform Bitcoin Transaction Hash Analysis</option>
-                <option value="4">Perform Bitcoin Wallet Forensic Analysis</option>
-                <option value="5">Check Bitcoin Wallet Reputationv</option>
+                <option value="4">Perform Bitcoin Transaction Hash Analysis</option>
+                <option value="5">Perform Bitcoin Wallet Forensic Analysis</option>
+                <option value="6">Check Bitcoin Wallet Reputation</option>
+            </select>
+            <select class="search-input mt-3" onchange="callXenoByteAPIs(this)">
+                <option value="">Ethereum Scan</option>
+                <option value="7">Perform Ethereum Transaction Hash Analysis</option>
+                <option value="9">Perform Ethereum Wallet Forensic Analysis</option>
+                <option value="10">Check Ethereum Wallet Reputation</option>
             </select>
         }
     </div>
@@ -27,6 +33,8 @@
             <option value="">Public Scan</option>
             <option value="1">Get APT Group Threat Intelligence</option>
             <option value="2">Trace Cryptocurrency Address or Transaction</option>
+            <option value="3">Check File Hash Reputation</option>
+            <option value="8">Upload and Scan File for Reputation</option>
         </select>
     </div>
 </section>
