@@ -109,7 +109,7 @@
                 }
             });
         } catch (e) {
-            console.error(e.message);
+            console.error('Error in XenoByte_load_view:', e);
         }
     };
 
@@ -159,6 +159,7 @@
             $('#' + modalId).remove();
         });
         modal.modal('show');
+
 
 
 
@@ -259,7 +260,7 @@
 }(jQuery));
 
 
-function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, warningMessage, okButtonText = "موافق", cancelButtonText = "الغاء", onConfirm, onCancel) {
+function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, warningMessage, okButtonText = "Ok", cancelButtonText = "Cancel", onConfirm, onCancel) {
     ModalId = ModalId || "Modal-XenoByte";
 
     let modalHtml = `
@@ -268,17 +269,13 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">${warningTitle}</h5>
-                        <button class="btn btn-close" type="button" data-dismiss="modal" aria-label="Close" id="${ModalId}-close-btn">
-                            <svg class="icon-back" width="20" height="20">
-                                <use xlink:href="#svg-close-ico"></use>
-                            </svg>
-                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="${ModalId}-close-btn"></button>
                     </div>
                     
                     <div class="modal-body">
                         <div class="px-3 pt-3">
-                            <input class="search-input" id="apiCallVelue">
-                            <small class="text-danger d-none" id="${ModalId}-error">⚠️ Required</small>
+                            <input class="search-input form-control" id="apiCallVelue" placeholder="Enter value...">
+                            <small class="text-danger d-none" id="${ModalId}-error">This field is required</small>
                         </div>
                         <div class="alert alert-info mt-3" role="alert">
                           ${warningMessage}
@@ -286,7 +283,7 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
                     </div>
                     <div class="modal-footer d-flex justify-content-end">
                         <button class="btn btn-primary mx-3" type="button" id="${ModalId}-confirm-btn">${okButtonText}</button>
-                        <button class="btn btn-dark" type="button" id="${ModalId}-cancel-btn">${cancelButtonText}</button>
+                        <button class="btn btn-secondary" type="button" id="${ModalId}-cancel-btn" data-bs-dismiss="modal">${cancelButtonText}</button>
                     </div>
                 </div>
             </div>
@@ -295,7 +292,10 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
 
     $('body').append(modalHtml);
 
-    $(`#${ModalId}`).modal('show');
+    // Use Bootstrap 5 modal
+    const modalElement = document.getElementById(ModalId);
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
 
     $(`#${ModalId}-confirm-btn`).on('click', function () {
         let inputVal = $("#apiCallVelue").val().trim();
@@ -312,7 +312,7 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
         if (typeof onConfirm === 'function') {
             onConfirm();
         }
-        $(`#${ModalId}`).modal('hide');
+        modal.hide();
     });
 
     // Cancel button handler
@@ -320,7 +320,6 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
         if (typeof onCancel === 'function') {
             onCancel();
         }
-        $(`#${ModalId}`).modal('hide');
     });
 
     // X (close) button handler
@@ -328,14 +327,98 @@ function showXenoByteAPICallModalWithCallbackFunction(ModalId, warningTitle, war
         if (typeof onCancel === 'function') {
             onCancel();
         }
-        $(`#${ModalId}`).modal('hide');
     });
 
-    $(`#${ModalId}`).on('hidden.bs.modal', function () {
+    modalElement.addEventListener('hidden.bs.modal', function () {
         $(`#${ModalId}`).remove();
     });
 }
 
+function showXenoByteFileUploadModal(ModalId, warningTitle, warningMessage, okButtonText = "Upload", cancelButtonText = "Cancel", onConfirm, onCancel) {
+    ModalId = ModalId || "Modal-XenoByte-File";
+
+    let modalHtml = `
+        <div class="modal fade" id="${ModalId}" tabindex="-1" role="dialog" aria-labelledby="${ModalId}-label" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="${ModalId}-label">${warningTitle}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="${ModalId}-close-btn"></button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <div class="px-3 pt-3">
+                            <input type="file" class="form-control" id="fileUploadInput" accept="*/*">
+                            <small class="text-muted">Maximum file size: 10MB</small>
+                            <small class="text-danger d-none" id="${ModalId}-error">Please select a file</small>
+                        </div>
+                        <div class="alert alert-info mt-3" role="alert">
+                          ${warningMessage}
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-end">
+                        <button class="btn btn-primary mx-3" type="button" id="${ModalId}-confirm-btn">${okButtonText}</button>
+                        <button class="btn btn-secondary" type="button" id="${ModalId}-cancel-btn" data-bs-dismiss="modal">${cancelButtonText}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHtml);
+
+    // Use Bootstrap 5 modal
+    const modalElement = document.getElementById(ModalId);
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+
+    $(`#${ModalId}-confirm-btn`).on('click', function () {
+        let fileInput = document.getElementById('fileUploadInput');
+        let file = fileInput.files[0];
+        let errorMsg = $(`#${ModalId}-error`);
+
+        if (!file) {
+            $("#fileUploadInput")
+                .addClass("is-invalid")
+                .css({ border: "1px solid #ff4d4d", boxShadow: "0 0 8px #ff4d4d" });
+            errorMsg.removeClass("d-none");
+            return;
+        }
+
+        // Validate file size (10MB limit)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            $("#fileUploadInput")
+                .addClass("is-invalid")
+                .css({ border: "1px solid #ff4d4d", boxShadow: "0 0 8px #ff4d4d" });
+            errorMsg.text("File size exceeds 10MB limit").removeClass("d-none");
+            return;
+        }
+
+        if (typeof onConfirm === 'function') {
+            onConfirm();
+        }
+        modal.hide();
+    });
+
+    // Cancel button handler
+    $(`#${ModalId}-cancel-btn`).on('click', function () {
+        if (typeof onCancel === 'function') {
+            onCancel();
+        }
+    });
+
+    // X (close) button handler
+    $(`#${ModalId}-close-btn`).on('click', function () {
+        if (typeof onCancel === 'function') {
+            onCancel();
+        }
+    });
+
+    modalElement.addEventListener('hidden.bs.modal', function () {
+        $(`#${ModalId}`).remove();
+    });
+}
 
 function showComingSoonPopup(ModalId) {
     ModalId = ModalId || "Modal-ComingSoon";
@@ -345,14 +428,14 @@ function showComingSoonPopup(ModalId) {
             <div class="modal-dialog modal-md modal-dialog-centered" role="document">
                 <div class="modal-content text-center">
                     <div class="modal-header border-0">
-                        <h5 class="modal-title w-100" id="${ModalId}-label">🚀 Coming Soon</h5>
-                        <button class="btn btn-close" type="button" data-dismiss="modal" aria-label="Close" id="${ModalId}-close-btn"></button>
+                        <h5 class="modal-title w-100" id="${ModalId}-label">Coming Soon</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="${ModalId}-close-btn"></button>
                     </div>
                     <div class="modal-body">
                         <p class="lead mb-0">This feature will be available in the UI soon. Stay tuned!</p>
                     </div>
                     <div class="modal-footer border-0 d-flex justify-content-center">
-                        <button class="btn btn-primary" type="button" id="${ModalId}-ok-btn">Got it</button>
+                        <button class="btn btn-primary" type="button" id="${ModalId}-ok-btn" data-bs-dismiss="modal">Got it</button>
                     </div>
                 </div>
             </div>
@@ -361,15 +444,13 @@ function showComingSoonPopup(ModalId) {
 
     $('body').append(modalHtml);
 
-    $(`#${ModalId}`).modal('show');
-
-    // Close on button click
-    $(`#${ModalId}-ok-btn, #${ModalId}-close-btn`).on('click', function () {
-        $(`#${ModalId}`).modal('hide');
-    });
+    // Use Bootstrap 5 modal
+    const modalElement = document.getElementById(ModalId);
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
 
     // Remove modal after hide
-    $(`#${ModalId}`).on('hidden.bs.modal', function () {
+    modalElement.addEventListener('hidden.bs.modal', function () {
         $(`#${ModalId}`).remove();
     });
 }

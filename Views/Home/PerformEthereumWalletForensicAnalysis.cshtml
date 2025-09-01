@@ -1,0 +1,197 @@
+@model PerformEthereumWalletForensicAnalysisModel
+
+@{
+    ViewData["Title"] = "Ethereum Wallet Forensic Analysis Report";
+
+    string Safe(string s) => string.IsNullOrWhiteSpace(s) ? "N/A" : s;
+    string RiskClass(string level)
+    {
+        if (string.IsNullOrWhiteSpace(level)) return "risk-low";
+        var low = level.Trim().ToLowerInvariant();
+        if (low.Contains("high") || low.Contains("critical"))
+            return "risk-high";
+        if (low.Contains("medium") || low.Contains("moderate"))
+            return "risk-medium";
+        return "risk-low";
+    }
+
+    string SeverityClass(string severity)
+    {
+        if (string.IsNullOrWhiteSpace(severity)) return "severity-low";
+        var low = severity.Trim().ToLowerInvariant();
+        if (low.Contains("high") || low.Contains("critical"))
+            return "severity-high";
+        if (low.Contains("medium") || low.Contains("moderate"))
+            return "severity-medium";
+        return "severity-low";
+    }
+
+    string JoinList(IEnumerable<string> items) => (items == null || !items.Any()) ? "—" : string.Join(", ", items);
+}
+
+<link rel="stylesheet" href="~/css/wallet-forensic-report.css" />
+
+<div class="content-section">
+    <!-- Header -->
+    <h2>Ethereum Wallet Forensic Analysis Report</h2>
+    <p><strong>Wallet Address:</strong> @Safe(Model?.wallet_address)</p>
+    <p><strong>Analysis Depth:</strong> @(Model?.max_depth ?? 0) levels</p>
+    <p><strong>Status:</strong> @Safe(Model?.status)</p>
+
+    <!-- Wallet Information -->
+    <h3>Wallet Information</h3>
+    @if (Model?.wallet_info != null)
+    {
+        <div class="section-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Address</strong></td><td>@Safe(Model.wallet_info.address)</td></tr>
+                    <tr><td><strong>Balance (ETH)</strong></td><td>@Safe(Model.wallet_info.balance_eth)</td></tr>
+                    <tr><td><strong>Balance (USD)</strong></td><td>@Safe(Model.wallet_info.balance_usd)</td></tr>
+                    <tr><td><strong>Transaction Count</strong></td><td>@(Model.wallet_info.transaction_count)</td></tr>
+                    <tr><td><strong>First Seen</strong></td><td>@Safe(Model.wallet_info.first_seen)</td></tr>
+                    <tr><td><strong>Last Seen</strong></td><td>@Safe(Model.wallet_info.last_seen)</td></tr>
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="section-content"><p><em>No wallet information available.</em></p></div>
+    }
+
+    <!-- Forensic Summary -->
+    <h3>Forensic Summary</h3>
+    @if (Model?.forensic_summary != null)
+    {
+        <div class="section-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Total Transactions</strong></td><td>@(Model.forensic_summary.total_transactions)</td></tr>
+                    <tr><td><strong>Total Value (ETH)</strong></td><td>@Safe(Model.forensic_summary.total_value_eth)</td></tr>
+                    <tr><td><strong>Total Value (USD)</strong></td><td>@Safe(Model.forensic_summary.total_value_usd)</td></tr>
+                    <tr><td><strong>Unique Addresses</strong></td><td>@(Model.forensic_summary.unique_addresses)</td></tr>
+                    <tr><td><strong>Connected Exchanges</strong></td><td>@JoinList(Model.forensic_summary.connected_exchanges)</td></tr>
+                    <tr><td><strong>Connected Mixers</strong></td><td>@JoinList(Model.forensic_summary.connected_mixers)</td></tr>
+                    <tr><td><strong>Risk Score</strong></td><td><span class="@RiskClass(Model.forensic_summary.risk_score)">@Safe(Model.forensic_summary.risk_score)</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="section-content"><p><em>No forensic summary available.</em></p></div>
+    }
+
+    <!-- Risk Indicators -->
+    <h3>Risk Indicators (@(Model?.risk_indicators?.Count ?? 0))</h3>
+    @if (Model?.risk_indicators?.Any() == true)
+    {
+        <div class="section-content">
+            @foreach (var indicator in Model.risk_indicators)
+            {
+                <div class="risk-indicator-item">
+                    <h4><span class="@SeverityClass(indicator.severity)">@Safe(indicator.indicator_type)</span></h4>
+                    <p><strong>Description:</strong> @Safe(indicator.description)</p>
+                    <p><strong>Severity:</strong> <span class="@SeverityClass(indicator.severity)">@Safe(indicator.severity)</span></p>
+                    <p><strong>Confidence:</strong> @Safe(indicator.confidence)</p>
+                    @if (indicator.evidence?.Any() == true)
+                    {
+                        <p><strong>Evidence:</strong></p>
+                        <ul>
+                            @foreach (var evidence in indicator.evidence)
+                            {
+                                <li>@evidence</li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="section-content"><p><em>No risk indicators found.</em></p></div>
+    }
+
+    <!-- Transaction Graph -->
+    <h3>Transaction Graph (@(Model?.transaction_graph?.Count ?? 0) transactions)</h3>
+    @if (Model?.transaction_graph?.Any() == true)
+    {
+        <div class="section-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tx Hash</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Value (ETH)</th>
+                        <th>Direction</th>
+                        <th>Depth</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tx in Model.transaction_graph.Take(50)) // Limit to first 50 for performance
+                    {
+                        <tr>
+                            <td><span class="hash-short">@(tx.transaction_hash?.Length > 10 ? tx.transaction_hash.Substring(0, 10) + "..." : tx.transaction_hash)</span></td>
+                            <td><span class="address-short">@(tx.from_address?.Length > 10 ? tx.from_address.Substring(0, 10) + "..." : tx.from_address)</span></td>
+                            <td><span class="address-short">@(tx.to_address?.Length > 10 ? tx.to_address.Substring(0, 10) + "..." : tx.to_address)</span></td>
+                            <td>@Safe(tx.value_eth)</td>
+                            <td><span class="direction-@(tx.direction?.ToLower())">@Safe(tx.direction)</span></td>
+                            <td>@(tx.depth_level)</td>
+                            <td>@Safe(tx.timestamp)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (Model.transaction_graph.Count > 50)
+            {
+                <p class="text-muted"><em>Showing first 50 transactions of @(Model.transaction_graph.Count) total.</em></p>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="section-content"><p><em>No transaction data available.</em></p></div>
+    }
+
+    <!-- Disclaimer -->
+    @if (!string.IsNullOrWhiteSpace(Model?.disclaimer))
+    {
+        <div class="alert alert-info mt-4">
+            <strong>Disclaimer:</strong> @Model.disclaimer
+        </div>
+    }
+
+    <!-- Action Buttons -->
+    <div class="section-content mt-4">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+            <i class="fas fa-home"></i> Back to Dashboard
+        </a>
+        <button onclick="analyzeAnotherWallet()" class="btn btn-secondary ms-2">
+            <i class="fas fa-search"></i> Analyze Another Wallet
+        </button>
+    </div>
+</div>
+
+<script>
+function analyzeAnotherWallet() {
+    // Trigger the wallet analysis modal again
+    const event = { target: { value: "9" } };
+    callXenoByteAPIs(event.target);
+}
+</script>

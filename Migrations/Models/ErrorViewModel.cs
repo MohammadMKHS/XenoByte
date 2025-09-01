@@ -1,3 +1,4 @@
+#nullable enable
 namespace XenoByte.Models
 {
     public class ErrorViewModel

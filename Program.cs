@@ -28,9 +28,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-app.UseAuthentication();  // <-- MUST come before UseAuthorization()
-app.UseAuthorization();
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -42,6 +39,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+// Authentication and Authorization MUST come after UseRouting() but before MapControllerRoute()
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapStaticAssets();
 
