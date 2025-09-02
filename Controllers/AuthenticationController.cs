@@ -6,16 +6,19 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using XenoByte.Services;
 
 namespace XenoByte.Controllers
 {
     public class AuthenticationController : Controller
     {
         private readonly ApplicationContext applicationContext;
+        private readonly IEmailService emailService;
 
-        public AuthenticationController(ApplicationContext ApplicationContext)
+        public AuthenticationController(ApplicationContext ApplicationContext, IEmailService emailService)
         {
             applicationContext = ApplicationContext;
+            this.emailService = emailService;
         }
 
         [HttpGet]
@@ -101,6 +104,89 @@ namespace XenoByte.Controllers
 
             // 5. Redirect to Login after success
             return RedirectToAction("Login");
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var user = await applicationContext.User.FirstOrDefaultAsync(u => u.Email == email);
+            
+            if (user == null)
+            {
+                ViewBag.Error = "No account found with that email address.";
+                return View();
+            }
+
+            // Generate reset token
+            string resetToken = Guid.NewGuid().ToString();
+            user.ResetToken = resetToken;
+            user.ResetTokenExpiry = DateTime.UtcNow.AddHours(1); // Token expires in 1 hour
+            
+            await applicationContext.SaveChangesAsync();
+
+            // Send reset email using the existing email service
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            await emailService.SendPasswordResetEmailAsync(user.Email, resetToken, baseUrl);
+
+            ViewBag.Success = "Password reset link has been sent to your email address.";
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest("Invalid reset token.");
+            }
+
+            var user = await applicationContext.User.FirstOrDefaultAsync(u => u.ResetToken == token);
+            
+            if (user == null || user.ResetTokenExpiry < DateTime.UtcNow)
+            {
+                ViewBag.Error = "Invalid or expired reset token.";
+                return View();
+            }
+
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string token, string password, string confirmPassword)
+        {
+            if (password != confirmPassword)
+            {
+                ViewBag.Error = "Passwords do not match.";
+                ViewBag.Token = token;
+                return View();
+            }
+
+            var user = await applicationContext.User.FirstOrDefaultAsync(u => u.ResetToken == token);
+            
+            if (user == null || user.ResetTokenExpiry < DateTime.UtcNow)
+            {
+                ViewBag.Error = "Invalid or expired reset token.";
+                return View();
+            }
+
+            // Hash new password
+            var hashedPassword = PasswordHelper.HashPassword(password);
+            user.PasswordHash = hashedPassword.hashedPassword;
+            user.PasswordSalt = hashedPassword.salt;
+            user.ResetToken = null;
+            user.ResetTokenExpiry = null;
+
+            await applicationContext.SaveChangesAsync();
+
+            ViewBag.Success = "Your password has been reset successfully. You can now login with your new password.";
+            return View();
         }
 
         [HttpGet]

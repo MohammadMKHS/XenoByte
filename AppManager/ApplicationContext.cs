@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using XenoByte.Models.Entity.Authentication;
+using XenoByte.Models.Entity;
 
 namespace XenoByte.AppManager
 {
@@ -11,6 +12,7 @@ namespace XenoByte.AppManager
         public DbSet<User> User { get; set; }
         public DbSet<Role> Role { get; set; }
         public DbSet<UserRoles> UserRole { get; set; }
+        public DbSet<RansomwareReport> RansomwareReports { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +25,17 @@ namespace XenoByte.AppManager
             modelBuilder.Entity<User>()
                 .Property(u => u.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder.Entity<RansomwareReport>()
+                .Property(r => r.CreatedAt)
+                .HasDefaultValueSql("GETDATE()");
+
+            // Configure the relationship between RansomwareReport and User
+            modelBuilder.Entity<RansomwareReport>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Name = "Admin",CreatedAt = new DateTime(2025, 8, 12) },

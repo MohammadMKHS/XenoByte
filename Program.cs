@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using XenoByte.AppManager;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using XenoByte.Services;
 
 
 
@@ -22,6 +23,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.SlidingExpiration = true;
     });
 
+// Register Email Service
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddAuthorization();

@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/mainStyle.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <!-- Header Section -->
@@ -22,7 +23,7 @@
                 <a class="nav-link px-2" asp-controller="Home" asp-action="Index">Home</a>
                 <a class="nav-link px-2" asp-controller="" asp-action="">About Us</a>
                 <a class="nav-link px-2" asp-controller="Home" asp-action="Contact">Contact</a>
-                <a class="nav-link px-2" asp-controller="" asp-action="">Report</a>
+                <a class="nav-link px-2" asp-controller="Home" asp-action="ReportRansomware">Report</a>
                 @if (!User.Identity.IsAuthenticated)
                 {
                     <a class="nav-link px-2" asp-controller="Authentication" asp-action="Login">Login</a>
@@ -31,6 +32,10 @@
                 else
                 {
                     <span class="ms-3">Hello, @User.Identity.Name!</span>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a class="nav-link px-2" asp-controller="Home" asp-action="RansomwareReports">View Reports</a>
+                    }
                     <a class="nav-link px-2" asp-controller="Authentication" asp-action="Logout">Logout</a>
                 }
                 <button id="themeToggleBtn" class="btn btn-link nav-link px-2 d-flex align-items-center" style="font-size:1.5rem;" title="Toggle theme">

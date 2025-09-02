@@ -1,11 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Security.Claims;
+using XenoByte.AppManager;
 using XenoByte.Models;
 using XenoByte.Models.API;
 using XenoByte.Models.API.BitCoin;
 using XenoByte.Models.API.Ethereum;
+using XenoByte.Models.Entity;
+using XenoByte.Models.ViewModels;
 
 namespace XenoByte.Controllers
 {
@@ -13,11 +18,15 @@ namespace XenoByte.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IConfiguration _configuration;
+        private readonly ApplicationContext _applicationContext;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
+        public HomeController(ILogger<HomeController> logger, IConfiguration configuration, ApplicationContext applicationContext, IWebHostEnvironment webHostEnvironment)
         {
             _logger = logger;
             _configuration = configuration;
+            _applicationContext = applicationContext;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public IActionResult Index()
@@ -34,6 +43,109 @@ namespace XenoByte.Controllers
         public IActionResult Contact()
         {
             return View();
+        }
+
+        [HttpGet]
+        public IActionResult ReportRansomware()
+        {
+            return View(new RansomwareReportViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReportRansomware(RansomwareReportViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var report = new RansomwareReport
+                {
+                    BitcoinAddresses = model.BitcoinAddresses,
+                    Family = model.Family,
+                    Demand = model.Demand,
+                    SourceLink = model.SourceLink,
+                    Notes = model.Notes,
+                    ReporterEmail = model.ReporterEmail,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // Get current user ID if authenticated
+                if (User.Identity.IsAuthenticated)
+                {
+                    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                    if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+                    {
+                        report.UserId = userId;
+                    }
+                }
+
+                // Handle file uploads
+                if (model.PaymentScreenshot != null)
+                {
+                    report.PaymentScreenshotPath = await SaveFileAsync(model.PaymentScreenshot, "payment-screenshots");
+                }
+
+                if (model.RansomNote != null)
+                {
+                    report.RansomNotePath = await SaveFileAsync(model.RansomNote, "ransom-notes");
+                }
+
+                _applicationContext.RansomwareReports.Add(report);
+                await _applicationContext.SaveChangesAsync();
+
+                ViewBag.Success = "Your ransomware report has been submitted successfully. Thank you for contributing to blockchain security!";
+                return View(new RansomwareReportViewModel()); // Return a fresh form
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving ransomware report");
+                ViewBag.Error = "An error occurred while submitting your report. Please try again.";
+                return View(model);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> RansomwareReports()
+        {
+            var reports = await _applicationContext.RansomwareReports
+                .Include(r => r.User)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return View(reports);
+        }
+
+        private async Task<string> SaveFileAsync(IFormFile file, string subfolder)
+        {
+            try
+            {
+                // Create upload directory if it doesn't exist
+                var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", subfolder);
+                Directory.CreateDirectory(uploadsFolder);
+
+                // Generate unique filename
+                var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(file.FileName);
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                // Save file
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(fileStream);
+                }
+
+                // Return relative path for database storage
+                return Path.Combine("uploads", subfolder, uniqueFileName).Replace("\\", "/");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving file: {FileName}", file.FileName);
+                throw;
+            }
         }
 
         [HttpGet]

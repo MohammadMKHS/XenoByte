@@ -1,211 +1,162 @@
+@using XenoByte.Models.API.Ethereum
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
 @model CheckEthereumWalletReputationModel
 
 @{
-    ViewData["Title"] = "Ethereum Wallet Reputation Report";
+    ViewData["Title"] = "Wallet Reputation Report";
 
-    string Safe(string s) => string.IsNullOrWhiteSpace(s) ? "N/A" : s;
-    string RiskClass(string level)
+    string RiskClass()
     {
-        if (string.IsNullOrWhiteSpace(level)) return "risk-low";
-        var low = level.Trim().ToLowerInvariant();
-        if (low.Contains("high") || low.Contains("critical"))
-            return "risk-high";
-        if (low.Contains("medium") || low.Contains("moderate"))
-            return "risk-medium";
-        return "risk-low";
+        var hasRansom = Model?.threat_intelligence?.is_known_ransomware_address_local_db == true || 
+                       Model?.threat_intelligence?.is_known_ransomware_address_api == true;
+        var hasReports = (Model?.chainabuse_reports?.total_reports_count ?? 0) > 0;
+        var isMalicious = Model?.overall_reputation?.@class?.ToLowerInvariant().Contains("malicious") == true;
+        
+        if (hasRansom || hasReports || isMalicious) return "malicious";
+        
+        // Check for suspicious patterns
+        var hasSuspiciousPatterns = Model?.behavioral_patterns?.Any(p => 
+            p.Contains("frequent") || p.Contains("rapid") || p.Contains("suspicious")) == true;
+        if (hasSuspiciousPatterns) return "suspicious";
+        
+        return "clean";
     }
 
-    string SeverityClass(string severity)
-    {
-        if (string.IsNullOrWhiteSpace(severity)) return "severity-low";
-        var low = severity.Trim().ToLowerInvariant();
-        if (low.Contains("high") || low.Contains("critical"))
-            return "severity-high";
-        if (low.Contains("medium") || low.Contains("moderate"))
-            return "severity-medium";
-        return "severity-low";
-    }
+    string Check(bool v) => v ? "?" : "—";
 
-    string JoinList(IEnumerable<string> items) => (items == null || !items.Any()) ? "—" : string.Join(", ", items);
+    // Safe join
+    string Join(IEnumerable<string> items) => items == null ? "N/A" : string.Join(", ", items);
+    
+    // Helper to check if a behavioral pattern exists
+    bool HasPattern(string pattern) => Model?.behavioral_patterns?.Any(p => 
+        p.ToLowerInvariant().Contains(pattern.ToLowerInvariant())) == true;
 }
 
-<link rel="stylesheet" href="~/css/wallet-forensic-report.css" />
+<link href="~/css/wallet-forensic-report.css" rel="stylesheet" />
 
 <div class="content-section">
-    <!-- Header -->
-    <h2>Ethereum Wallet Reputation Report</h2>
-    <p><strong>Wallet Address:</strong> @Safe(Model?.wallet_address)</p>
-    <p><strong>Status:</strong> @Safe(Model?.status)</p>
-    <p>
-        <strong>Reputation Score:</strong> 
-        <span class="@RiskClass(Model?.risk_level)">@Safe(Model?.reputation_score)</span>
-    </p>
-    <p>
-        <strong>Risk Level:</strong> 
-        <span class="@RiskClass(Model?.risk_level)">@Safe(Model?.risk_level)</span>
-    </p>
+    <div class="reputation-score @RiskClass()">
+        Overall Reputation:
+        @if (RiskClass() == "malicious")
+        {
+            <span>?? HIGH RISK</span>
+        }
+        else if (RiskClass() == "suspicious")
+        {
+            <span>?? SUSPICIOUS</span>
+        }
+        else
+        {
+            <span>?? LIKELY CLEAN / LOW RISK</span>
+        }
+    </div>
 
-    <!-- Wallet Basic Information -->
-    <h3>Wallet Basic Information</h3>
-    @if (Model?.wallet_basic_info != null)
-    {
-        <div class="section-content">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Field</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td><strong>Address</strong></td><td>@Safe(Model.wallet_basic_info.address)</td></tr>
-                    <tr><td><strong>Balance (ETH)</strong></td><td>@Safe(Model.wallet_basic_info.balance_eth)</td></tr>
-                    <tr><td><strong>Balance (USD)</strong></td><td>@Safe(Model.wallet_basic_info.balance_usd)</td></tr>
-                    <tr><td><strong>Transaction Count</strong></td><td>@(Model.wallet_basic_info.transaction_count)</td></tr>
-                    <tr><td><strong>Creation Date</strong></td><td>@Safe(Model.wallet_basic_info.creation_date)</td></tr>
-                    <tr><td><strong>Last Activity</strong></td><td>@Safe(Model.wallet_basic_info.last_activity)</td></tr>
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="section-content"><p><em>No wallet information available.</em></p></div>
-    }
+    <h2>Basic Information</h2>
+    <div class="section-content">
+        <p class="info-item"><strong>Current Balance:</strong> @(Model?.basic_info?.current_balance_eth.ToString("0.########") ?? "0") ETH</p>
+        <p class="info-item"><strong>Total Transactions:</strong> @(Model?.basic_info?.total_transactions ?? 0)</p>
+        <p class="info-item"><strong>Last Transaction:</strong> @(string.IsNullOrWhiteSpace(Model?.basic_info?.last_transaction_time_utc) ? "N/A" : Model.basic_info.last_transaction_time_utc)</p>
+        <p class="info-item"><strong>Blockchain Type:</strong> @(string.IsNullOrWhiteSpace(Model?.basic_info?.blockchain_type) ? "Unknown" : Model.basic_info.blockchain_type)</p>
+        <p class="info-item"><strong>Inferred Wallet Type:</strong> @(string.IsNullOrWhiteSpace(Model?.basic_info?.inferred_wallet_type) ? "Uncertain" : Model.basic_info.inferred_wallet_type)</p>
+    </div>
 
-    <!-- Reputation Flags -->
-    <h3>Reputation Flags (@(Model?.reputation_flags?.Count ?? 0))</h3>
-    @if (Model?.reputation_flags?.Any() == true)
-    {
-        <div class="section-content">
-            @foreach (var flag in Model.reputation_flags)
+    <h2>Threat Intelligence</h2>
+    <div class="section-content">
+        <p>
+            <strong>Ransomware (Local DB):</strong> @(Model?.threat_intelligence?.is_known_ransomware_address_local_db == true ? "Yes" : "No")
+            &nbsp;|&nbsp;
+            <strong>Ransomware (API):</strong> @(Model?.threat_intelligence?.is_known_ransomware_address_api == true ? "Yes" : "No")
+        </p>
+        <p><strong>Families (API):</strong> @(string.IsNullOrWhiteSpace(Model?.threat_intelligence?.ransomware_families_identified) ? "N/A" : Model.threat_intelligence.ransomware_families_identified)</p>
+
+        @if (Model?.chainabuse_reports?.reports?.Any() == true)
+        {
+            <h3>Red Flags</h3>
+            <ul>
+                @foreach (var report in Model.chainabuse_reports.reports)
+                {
+                    <li class="threat-detected">@report.category: @report.description</li>
+                }
+            </ul>
+        }
+    </div>
+
+    <h2>Behavioral & Pattern Analysis</h2>
+    <div class="section-content">
+        <ul>
+            <li><span class="@(HasPattern("extremely rapid") ? "analysis-flag" : "analysis-clean")">@Check(HasPattern("extremely rapid"))</span> Extremely rapid transactions</li>
+            <li><span class="@(HasPattern("rapid") || HasPattern("frequent") ? "analysis-flag" : "analysis-clean")">@Check(HasPattern("rapid") || HasPattern("frequent"))</span> Rapid transactions (? 5 minutes)</li>
+            <li><span class="@(HasPattern("frequent") ? "analysis-flag" : "analysis-clean")">@Check(HasPattern("frequent"))</span> Frequent transactions (? 5 days)</li>
+            <li><span class="@(HasPattern("automated") ? "analysis-flag" : "analysis-clean")">@Check(HasPattern("automated"))</span> Automated patterns (5s–1min)</li>
+            <li><span class="@(HasPattern("high transaction") ? "analysis-flag" : "analysis-clean")">@Check(HasPattern("high transaction"))</span> High transaction count</li>
+            <li><span class="@(HasPattern("large amount") ? "analysis-flag" : "analysis-clean")">@Check(HasPattern("large amount"))</span> Unusually large amounts received</li>
+            <li><span class="@(HasPattern("dust attack") ? "analysis-flag" : "analysis-clean")">@Check(HasPattern("dust attack"))</span> Dust attack pattern</li>
+            <li><span class="@(HasPattern("high.*fee") ? "analysis-flag" : "analysis-clean")">@Check(HasPattern("high.*fee"))</span> High transaction fee detected</li>
+            <li><strong>Automated Tx Time Diff:</strong> N/A</li>
+            <li><span class="@(HasPattern("dormant") ? "analysis-flag" : "analysis-clean")">@Check(HasPattern("dormant"))</span> Dormant for over a year</li>
+        </ul>
+        
+        @if (Model?.behavioral_patterns?.Any() == true)
+        {
+            <h3>Additional Patterns Detected</h3>
+            <ul>
+                @foreach (var pattern in Model.behavioral_patterns)
+                {
+                    <li>@pattern</li>
+                }
+            </ul>
+        }
+    </div>
+
+    <h2>Chainabuse Reports</h2>
+    <div class="section-content">
+        @if (Model?.chainabuse_reports != null)
+        {
+            <p>
+                <strong>Total Reports:</strong> @Model.chainabuse_reports.total_reports_count
+                @if (!string.IsNullOrWhiteSpace(Model.chainabuse_reports.url_scraped))
+                {
+                    <span> — <a href="@Model.chainabuse_reports.url_scraped" target="_blank">Source</a></span>
+                }
+            </p>
+
+            @if (Model.chainabuse_reports.reports?.Any() == true)
             {
-                <div class="reputation-flag-item">
-                    <h4><span class="@SeverityClass(flag.severity)">@Safe(flag.flag_type)</span></h4>
-                    <p><strong>Description:</strong> @Safe(flag.description)</p>
-                    <p><strong>Severity:</strong> <span class="@SeverityClass(flag.severity)">@Safe(flag.severity)</span></p>
-                    <p><strong>Source:</strong> @Safe(flag.source)</p>
-                    <p><strong>Date Flagged:</strong> @Safe(flag.date_flagged)</p>
-                </div>
+                var idx = 1;
+                foreach (var report in Model.chainabuse_reports.reports)
+                {
+                    <div class="chainabuse-report-card">
+                        <h5>Report @idx: @(string.IsNullOrWhiteSpace(report.category) ? "Unspecified" : report.category)</h5>
+                        @if (!string.IsNullOrWhiteSpace(report.description))
+                        {
+                            <p><strong>Description:</strong> @report.description</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(report.submitted_by))
+                        {
+                            <p><strong>Submitted By:</strong> @report.submitted_by</p>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(report.submitted_date))
+                        {
+                            <p><strong>Submitted Date:</strong> @report.submitted_date</p>
+                        }
+                        @if (report.reported_addresses?.Any() == true)
+                        {
+                            <p><strong>Reported Addresses:</strong> @string.Join(", ", report.reported_addresses)</p>
+                        }
+                    </div>
+
+                    idx++;
+                }
             }
-        </div>
-    }
-    else
-    {
-        <div class="section-content"><p><em>No reputation flags found.</em></p></div>
-    }
-
-    <!-- Known Associations -->
-    <h3>Known Associations (@(Model?.known_associations?.Count ?? 0))</h3>
-    @if (Model?.known_associations?.Any() == true)
-    {
-        <div class="section-content">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Entity Name</th>
-                        <th>Type</th>
-                        <th>Association</th>
-                        <th>Confidence</th>
-                        <th>Last Interaction</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var association in Model.known_associations)
-                    {
-                        <tr>
-                            <td>@Safe(association.entity_name)</td>
-                            <td>@Safe(association.entity_type)</td>
-                            <td>@Safe(association.association_type)</td>
-                            <td>@Safe(association.confidence_level)</td>
-                            <td>@Safe(association.last_interaction)</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="section-content"><p><em>No known associations found.</em></p></div>
-    }
-
-    <!-- Transaction Profile -->
-    <h3>Transaction Profile</h3>
-    @if (Model?.transaction_profile != null)
-    {
-        <div class="section-content">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td><strong>Average Transaction Value</strong></td><td>@Safe(Model.transaction_profile.average_transaction_value)</td></tr>
-                    <tr><td><strong>Total Volume (ETH)</strong></td><td>@Safe(Model.transaction_profile.total_volume_eth)</td></tr>
-                    <tr><td><strong>Total Volume (USD)</strong></td><td>@Safe(Model.transaction_profile.total_volume_usd)</td></tr>
-                    <tr><td><strong>Incoming Transactions</strong></td><td>@(Model.transaction_profile.incoming_transactions)</td></tr>
-                    <tr><td><strong>Outgoing Transactions</strong></td><td>@(Model.transaction_profile.outgoing_transactions)</td></tr>
-                    <tr><td><strong>Frequent Counterparties</strong></td><td>@JoinList(Model.transaction_profile.frequent_counterparties)</td></tr>
-                </tbody>
-            </table>
-        </div>
-    }
-    else
-    {
-        <div class="section-content"><p><em>No transaction profile available.</em></p></div>
-    }
-
-    <!-- Security Alerts -->
-    <h3>Security Alerts (@(Model?.security_alerts?.Count ?? 0))</h3>
-    @if (Model?.security_alerts?.Any() == true)
-    {
-        <div class="section-content">
-            @foreach (var alert in Model.security_alerts)
+            else
             {
-                <div class="security-alert-item">
-                    <h4><span class="@SeverityClass(alert.severity)">@Safe(alert.alert_type)</span></h4>
-                    <p><strong>Message:</strong> @Safe(alert.message)</p>
-                    <p><strong>Severity:</strong> <span class="@SeverityClass(alert.severity)">@Safe(alert.severity)</span></p>
-                    <p><strong>Timestamp:</strong> @Safe(alert.timestamp)</p>
-                    @if (alert.related_addresses?.Any() == true)
-                    {
-                        <p><strong>Related Addresses:</strong> @JoinList(alert.related_addresses)</p>
-                    }
-                </div>
+                <p><em>No detailed report items.</em></p>
             }
-        </div>
-    }
-    else
-    {
-        <div class="section-content"><p><em>No security alerts found.</em></p></div>
-    }
-
-    <!-- Disclaimer -->
-    @if (!string.IsNullOrWhiteSpace(Model?.disclaimer))
-    {
-        <div class="alert alert-info mt-4">
-            <strong>Disclaimer:</strong> @Model.disclaimer
-        </div>
-    }
-
-    <!-- Action Buttons -->
-    <div class="section-content mt-4">
-        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
-            <i class="fas fa-home"></i> Back to Dashboard
-        </a>
-        <button onclick="checkAnotherWallet()" class="btn btn-secondary ms-2">
-            <i class="fas fa-shield-alt"></i> Check Another Wallet
-        </button>
+        }
+        else
+        {
+            <p><em>No Chainabuse data.</em></p>
+        }
     </div>
 </div>
-
-<script>
-function checkAnotherWallet() {
-    // Trigger the wallet reputation modal again
-    const event = { target: { value: "10" } };
-    callXenoByteAPIs(event.target);
-}
-</script>

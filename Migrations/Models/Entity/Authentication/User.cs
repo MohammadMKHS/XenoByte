@@ -16,6 +16,10 @@ namespace XenoByte.Models.Entity.Authentication
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        // Password Reset Fields
+        public string? ResetToken { get; set; }
+        public DateTime? ResetTokenExpiry { get; set; }
+
         // Navigation
         public ICollection<UserRoles> UserRoles { get; set; }
     }

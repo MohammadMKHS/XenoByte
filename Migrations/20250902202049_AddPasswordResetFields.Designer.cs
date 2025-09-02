@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using XenoByte.AppManager;
 
@@ -11,9 +12,11 @@ using XenoByte.AppManager;
 namespace XenoByte.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20250902202049_AddPasswordResetFields")]
+    partial class AddPasswordResetFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -135,54 +138,6 @@ namespace XenoByte.Migrations
                         });
                 });
 
-            modelBuilder.Entity("XenoByte.Models.Entity.RansomwareReport", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BitcoinAddresses")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<string>("Demand")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Family")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PaymentScreenshotPath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RansomNotePath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReporterEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SourceLink")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RansomwareReports");
-                });
-
             modelBuilder.Entity("XenoByte.Models.Entity.Authentication.UserRoles", b =>
                 {
                     b.HasOne("XenoByte.Models.Entity.Authentication.Role", "Role")
@@ -198,16 +153,6 @@ namespace XenoByte.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("XenoByte.Models.Entity.RansomwareReport", b =>
-                {
-                    b.HasOne("XenoByte.Models.Entity.Authentication.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });
